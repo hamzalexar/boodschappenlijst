@@ -15,6 +15,7 @@ import {
   writeBatch,
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
+import { bepaalLijstCode } from "./lijst-code.js";
 
 const CATEGORIE_VOLGORDE = [
   "Groenten & fruit",
@@ -26,9 +27,6 @@ const CATEGORIE_VOLGORDE = [
   "Huishouden",
   "Overig",
 ];
-
-const LOCALSTORAGE_KEY = "boodschappenlijst:lijstcode";
-const LIJST_CODE_PATTERN = /^[a-zA-Z0-9]{6,64}$/;
 
 // --- DOM-elementen ---
 const addForm = document.getElementById("add-form");
@@ -44,39 +42,12 @@ const statusIndicator = document.getElementById("status-indicator");
 const statusLabel = statusIndicator.querySelector(".status__label");
 const categoryTemplate = document.getElementById("category-group-template");
 const itemTemplate = document.getElementById("item-template");
-
-// --- Lijst-code: bepaalt welk Firestore-pad we gebruiken ---
-function genereerLijstCode(lengte = 24) {
-  const alfabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const willekeurigeWaarden = new Uint32Array(lengte);
-  crypto.getRandomValues(willekeurigeWaarden);
-  return Array.from(willekeurigeWaarden, (n) => alfabet[n % alfabet.length]).join("");
-}
-
-function bepaalLijstCode() {
-  const url = new URL(window.location.href);
-  const codeUitUrl = url.searchParams.get("lijst");
-
-  if (codeUitUrl && LIJST_CODE_PATTERN.test(codeUitUrl)) {
-    localStorage.setItem(LOCALSTORAGE_KEY, codeUitUrl);
-    return codeUitUrl;
-  }
-
-  const opgeslagenCode = localStorage.getItem(LOCALSTORAGE_KEY);
-  if (opgeslagenCode && LIJST_CODE_PATTERN.test(opgeslagenCode)) {
-    url.searchParams.set("lijst", opgeslagenCode);
-    window.history.replaceState(null, "", url);
-    return opgeslagenCode;
-  }
-
-  const nieuweCode = genereerLijstCode();
-  localStorage.setItem(LOCALSTORAGE_KEY, nieuweCode);
-  url.searchParams.set("lijst", nieuweCode);
-  window.history.replaceState(null, "", url);
-  return nieuweCode;
-}
+const statsLink = document.getElementById("stats-link");
 
 const lijstCode = bepaalLijstCode();
+if (statsLink) {
+  statsLink.href = `statistieken.html?lijst=${encodeURIComponent(lijstCode)}`;
+}
 
 // --- Firebase / Firestore ---
 const app = initializeApp(firebaseConfig);
@@ -92,6 +63,7 @@ try {
 }
 
 const itemsRef = collection(db, "lijsten", lijstCode, "items");
+const geschiedenisRef = collection(db, "lijsten", lijstCode, "geschiedenis");
 
 let huidigeItems = [];
 
@@ -144,7 +116,7 @@ function buildItemNode(item) {
   const checkbox = li.querySelector(".item__checkbox");
   checkbox.checked = Boolean(item.afgevinkt);
   checkbox.setAttribute("aria-label", `${item.naam} afvinken`);
-  checkbox.addEventListener("change", () => toggleAfgevinkt(item.id, checkbox.checked));
+  checkbox.addEventListener("change", () => toggleAfgevinkt(item, checkbox.checked));
 
   li.querySelector(".item__naam").textContent = item.naam;
   li.querySelector(".item__hoeveelheid").textContent = item.hoeveelheid ? `· ${item.hoeveelheid}` : "";
@@ -163,10 +135,20 @@ function updateTeller(items) {
 }
 
 // --- Firestore-acties ---
-function toggleAfgevinkt(id, afgevinkt) {
-  updateDoc(doc(itemsRef, id), { afgevinkt }).catch((err) =>
+function toggleAfgevinkt(item, afgevinkt) {
+  updateDoc(doc(itemsRef, item.id), { afgevinkt }).catch((err) =>
     console.error("Kon item niet bijwerken:", err)
   );
+
+  // Alleen loggen bij het aanvinken (= "gekocht"), niet bij het ongedaan maken.
+  if (afgevinkt) {
+    addDoc(geschiedenisRef, {
+      naam: item.naam,
+      categorie: item.categorie || "Overig",
+      hoeveelheid: item.hoeveelheid || null,
+      gekocht: Date.now(),
+    }).catch((err) => console.error("Kon aankoop niet loggen voor statistieken:", err));
+  }
 }
 
 function verwijderItem(id) {
