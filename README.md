@@ -26,9 +26,15 @@ en de site is gratis te hosten via GitHub Pages.
   verbinding is. De statusindicator rechtsboven toont Online/Offline.
 - Onderaan de pagina staat een link **"Bekijk koopstatistieken"**: die toont
   per product hoe vaak je het hebt afgevinkt en wanneer voor het laatst.
-  Elke keer dat je een item aanvinkt (niet bij het ongedaan maken) wordt dat
-  gelogd; producten met dezelfde naam (ongeacht hoofdletters/spaties) worden
+  Producten met dezelfde naam (ongeacht hoofdletters/spaties) worden
   samengevoegd.
+- Zodra je een item afvinkt, verschijnen er twee optionele velden: **Prijs**
+  en **Winkel**. Vul je die in (bijv. bij het scannen aan de kassa), dan
+  onthoudt de app dat. Op de statistiekenpagina zie je vervolgens per
+  product een vergelijking tussen winkels, met de goedkoopste bovenaan (🏆)
+  — zo bouw je op termijn op wat waar het voordeligst is. Deze velden zijn
+  optioneel: laat je ze leeg, dan telt het item nog gewoon mee voor "hoe
+  vaak gekocht".
 
 ### ⚠️ De link is privé — behandel hem als een wachtwoord
 
