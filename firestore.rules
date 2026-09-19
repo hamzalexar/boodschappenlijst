@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Alleen toegang tot de items van een specifieke lijst-code.
+    // Er is geen inlog: de lange, willekeurige lijst-code in de URL
+    // fungeert als het "wachtwoord" voor die lijst. Omdat er geen regel
+    // is voor /lijsten/{lijstCode} zelf (alleen voor de subcollectie
+    // /items eronder), kan niemand de collectie "lijsten" opsommen en
+    // zo alle bestaande lijst-codes ontdekken — je moet de exacte code
+    // al kennen om bij een lijst te kunnen.
+    match /lijsten/{lijstCode}/items/{itemId} {
+      allow read, write: if true;
+    }
+
+    // Alles daarbuiten is standaard dicht (impliciete deny).
+  }
+}
