@@ -389,6 +389,80 @@ select {
   padding: 0 8px;
 }
 
+.app-footer a {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  padding: 8px 4px;
+}
+
+.app-footer a:hover,
+.app-footer a:focus-visible {
+  text-decoration: underline;
+}
+
+.stats-intro {
+  margin: 10px 0 4px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.stats-list {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stats-row {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+
+.stats-row__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stats-row__naam {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.stats-row__aantal {
+  color: var(--color-accent);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stats-row__bar {
+  margin-top: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-surface-alt);
+  overflow: hidden;
+}
+
+.stats-row__bar-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 4px;
+}
+
+.stats-row__meta {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
 @media (min-width: 480px) {
   .field--small {
     width: 120px;
