@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Boodschappenlijst</title>
+  <meta name="description" content="Gedeelde boodschappenlijst voor het gezin, realtime synchroon op alle telefoons." />
+  <meta name="theme-color" content="#2e7d32" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0f1a0f" media="(prefers-color-scheme: dark)" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="app-header__top">
+        <h1>🛒 Boodschappenlijst</h1>
+        <span id="status-indicator" class="status" aria-live="polite">
+          <span class="status__dot"></span>
+          <span class="status__label">Verbinden…</span>
+        </span>
+      </div>
+
+      <div class="counter" id="counter" aria-live="polite">
+        0 van 0 items afgevinkt
+      </div>
+
+      <div class="header-actions">
+        <button id="share-button" type="button" class="btn btn--secondary">
+          <span aria-hidden="true">🔗</span> Deel deze lijst
+        </button>
+        <button id="clear-checked-button" type="button" class="btn btn--ghost">
+          Wis afgevinkte items
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <form id="add-form" class="add-form" autocomplete="off">
+        <div class="add-form__row">
+          <div class="field field--grow">
+            <label for="item-naam" class="visually-hidden">Naam van het item</label>
+            <input
+              id="item-naam"
+              name="naam"
+              type="text"
+              placeholder="Bijv. Melk"
+              required
+              maxlength="80"
+            />
+          </div>
+          <div class="field field--small">
+            <label for="item-hoeveelheid" class="visually-hidden">Hoeveelheid (optioneel)</label>
+            <input
+              id="item-hoeveelheid"
+              name="hoeveelheid"
+              type="text"
+              placeholder="Aantal"
+              maxlength="20"
+            />
+          </div>
+        </div>
+        <div class="add-form__row">
+          <div class="field field--grow">
+            <label for="item-categorie" class="visually-hidden">Categorie</label>
+            <select id="item-categorie" name="categorie">
+              <option value="Groenten & fruit">Groenten &amp; fruit</option>
+              <option value="Zuivel">Zuivel</option>
+              <option value="Vlees & vis">Vlees &amp; vis</option>
+              <option value="Brood">Brood</option>
+              <option value="Droge voeding">Droge voeding</option>
+              <option value="Dranken">Dranken</option>
+              <option value="Huishouden">Huishouden</option>
+              <option value="Overig" selected>Overig</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn--primary">
+            Toevoegen
+          </button>
+        </div>
+      </form>
+
+      <div id="empty-state" class="empty-state" hidden>
+        <p class="empty-state__emoji" aria-hidden="true">🧺</p>
+        <p>Je lijst is nog leeg.</p>
+        <p class="empty-state__hint">Voeg hierboven je eerste boodschap toe.</p>
+      </div>
+
+      <div id="list-container" class="list-container">
+        <!-- Categorie-groepen worden hier door app.js ingevoegd -->
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Lijst-link is privé: iedereen die de link heeft, kan meelezen en bewerken.</p>
+    </footer>
+  </div>
+
+  <template id="category-group-template">
+    <section class="category-group">
+      <h2 class="category-group__title"></h2>
+      <ul class="item-list"></ul>
+    </section>
+  </template>
+
+  <template id="item-template">
+    <li class="item">
+      <label class="item__checkbox-wrap">
+        <input type="checkbox" class="item__checkbox" />
+        <span class="item__checkbox-visual" aria-hidden="true"></span>
+      </label>
+      <span class="item__text">
+        <span class="item__naam"></span>
+        <span class="item__hoeveelheid"></span>
+      </span>
+      <button type="button" class="item__delete" aria-label="Item verwijderen">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </li>
+  </template>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
