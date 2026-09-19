@@ -12,6 +12,8 @@ import {
   onSnapshot,
   query,
   orderBy,
+  limit,
+  getDocs,
   writeBatch,
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
@@ -43,6 +45,7 @@ const statusLabel = statusIndicator.querySelector(".status__label");
 const categoryTemplate = document.getElementById("category-group-template");
 const itemTemplate = document.getElementById("item-template");
 const statsLink = document.getElementById("stats-link");
+const winkelDatalist = document.getElementById("winkel-suggesties");
 
 const lijstCode = bepaalLijstCode();
 if (statsLink) {
@@ -65,6 +68,23 @@ try {
 const itemsRef = collection(db, "lijsten", lijstCode, "items");
 const geschiedenisRef = collection(db, "lijsten", lijstCode, "geschiedenis");
 
+// Vult de datalist met winkels die eerder zijn ingevuld, als hulp bij het
+// invullen (niet verplicht: vrije tekst blijft mogelijk).
+getDocs(query(geschiedenisRef, orderBy("gekocht", "desc"), limit(200)))
+  .then((snapshot) => {
+    const winkels = new Set();
+    snapshot.forEach((d) => {
+      const winkel = d.data().winkel;
+      if (winkel) winkels.add(winkel);
+    });
+    for (const winkel of winkels) {
+      const option = document.createElement("option");
+      option.value = winkel;
+      winkelDatalist.appendChild(option);
+    }
+  })
+  .catch((err) => console.warn("Kon winkel-suggesties niet laden:", err));
+
 let huidigeItems = [];
 
 const itemsQuery = query(itemsRef, orderBy("aangemaakt", "asc"));
@@ -81,7 +101,14 @@ onSnapshot(
 );
 
 // --- Renderen ---
+// De lijst wordt bij elke Firestore-update volledig opnieuw opgebouwd. Omdat
+// het invullen van prijs/winkel zelf ook een update veroorzaakt (bij het
+// verlaten van het prijsveld), zou de focus anders midden in het invullen
+// verspringen. Daarom onthouden we welk veld actief was en zetten de focus
+// (en cursorpositie) terug na het herbouwen.
 function render(items) {
+  const focusInfo = bewaarFocus();
+
   updateTeller(items);
   listContainer.innerHTML = "";
 
@@ -106,6 +133,35 @@ function render(items) {
     }
     listContainer.appendChild(groupFragment);
   }
+
+  herstelFocus(focusInfo);
+}
+
+function bewaarFocus() {
+  const actief = document.activeElement;
+  if (!actief || !listContainer.contains(actief) || !actief.dataset.itemId) return null;
+  return {
+    itemId: actief.dataset.itemId,
+    veld: actief.classList.contains("item__prijs-input") ? "prijs" : "winkel",
+    waarde: actief.value,
+    selectionStart: actief.selectionStart,
+    selectionEnd: actief.selectionEnd,
+  };
+}
+
+function herstelFocus(focusInfo) {
+  if (!focusInfo) return;
+  const selector = `.item__${focusInfo.veld}-input[data-item-id="${CSS.escape(focusInfo.itemId)}"]`;
+  const nieuwElement = listContainer.querySelector(selector);
+  if (!nieuwElement) return;
+  // Niet-opgeslagen tekst die nog in dit veld stond (bijv. terwijl de
+  // update van het andere veld net binnenkwam) blijft staan in plaats van
+  // te worden overschreven door de waarde uit Firestore.
+  nieuwElement.value = focusInfo.waarde;
+  nieuwElement.focus();
+  if (typeof focusInfo.selectionStart === "number") {
+    nieuwElement.setSelectionRange(focusInfo.selectionStart, focusInfo.selectionEnd);
+  }
 }
 
 function buildItemNode(item) {
@@ -123,7 +179,30 @@ function buildItemNode(item) {
 
   const deleteButton = li.querySelector(".item__delete");
   deleteButton.setAttribute("aria-label", `${item.naam} verwijderen`);
-  deleteButton.addEventListener("click", () => verwijderItem(item.id));
+  deleteButton.addEventListener("click", () => verwijderItem(item));
+
+  const prijsRij = li.querySelector(".item__prijs-rij");
+  const prijsInput = li.querySelector(".item__prijs-input");
+  const winkelInput = li.querySelector(".item__winkel-input");
+  prijsRij.hidden = !item.afgevinkt;
+  prijsInput.value = item.prijs != null ? item.prijs : "";
+  winkelInput.value = item.winkel || "";
+  prijsInput.dataset.itemId = item.id;
+  winkelInput.dataset.itemId = item.id;
+
+  prijsInput.addEventListener("blur", () => {
+    const ruw = prijsInput.value.trim().replace(",", ".");
+    const prijs = ruw === "" ? null : Math.round(parseFloat(ruw) * 100) / 100;
+    updateDoc(doc(itemsRef, item.id), { prijs: Number.isFinite(prijs) ? prijs : null }).catch(
+      (err) => console.error("Kon prijs niet opslaan:", err)
+    );
+  });
+
+  winkelInput.addEventListener("blur", () => {
+    updateDoc(doc(itemsRef, item.id), { winkel: winkelInput.value.trim() || null }).catch((err) =>
+      console.error("Kon winkel niet opslaan:", err)
+    );
+  });
 
   return li;
 }
@@ -139,22 +218,31 @@ function toggleAfgevinkt(item, afgevinkt) {
   updateDoc(doc(itemsRef, item.id), { afgevinkt }).catch((err) =>
     console.error("Kon item niet bijwerken:", err)
   );
-
-  // Alleen loggen bij het aanvinken (= "gekocht"), niet bij het ongedaan maken.
-  if (afgevinkt) {
-    addDoc(geschiedenisRef, {
-      naam: item.naam,
-      categorie: item.categorie || "Overig",
-      hoeveelheid: item.hoeveelheid || null,
-      gekocht: Date.now(),
-    }).catch((err) => console.error("Kon aankoop niet loggen voor statistieken:", err));
-  }
 }
 
-function verwijderItem(id) {
-  deleteDoc(doc(itemsRef, id)).catch((err) =>
-    console.error("Kon item niet verwijderen:", err)
-  );
+// Bouwt het geschiedenis-record dat bewaard blijft nadat een afgevinkt item
+// wordt verwijderd (prijs/winkel zijn optioneel en kunnen leeg zijn).
+function bouwGeschiedenisRecord(item) {
+  return {
+    naam: item.naam,
+    categorie: item.categorie || "Overig",
+    hoeveelheid: item.hoeveelheid || null,
+    prijs: typeof item.prijs === "number" ? item.prijs : null,
+    winkel: item.winkel || null,
+    gekocht: Date.now(),
+  };
+}
+
+async function verwijderItem(item) {
+  try {
+    // Alleen loggen als het item was afgevinkt (= daadwerkelijk gekocht).
+    if (item.afgevinkt) {
+      await addDoc(geschiedenisRef, bouwGeschiedenisRecord(item));
+    }
+    await deleteDoc(doc(itemsRef, item.id));
+  } catch (err) {
+    console.error("Kon item niet verwijderen:", err);
+  }
 }
 
 addForm.addEventListener("submit", async (event) => {
@@ -191,6 +279,7 @@ clearCheckedButton.addEventListener("click", async () => {
 
   const batch = writeBatch(db);
   for (const item of teVerwijderen) {
+    batch.set(doc(geschiedenisRef), bouwGeschiedenisRecord(item));
     batch.delete(doc(itemsRef, item.id));
   }
   try {

@@ -109,19 +109,41 @@
 
   <template id="item-template">
     <li class="item">
-      <label class="item__checkbox-wrap">
-        <input type="checkbox" class="item__checkbox" />
-        <span class="item__checkbox-visual" aria-hidden="true"></span>
-      </label>
-      <span class="item__text">
-        <span class="item__naam"></span>
-        <span class="item__hoeveelheid"></span>
-      </span>
-      <button type="button" class="item__delete" aria-label="Item verwijderen">
-        <span aria-hidden="true">✕</span>
-      </button>
+      <div class="item__top">
+        <label class="item__checkbox-wrap">
+          <input type="checkbox" class="item__checkbox" />
+          <span class="item__checkbox-visual" aria-hidden="true"></span>
+        </label>
+        <span class="item__text">
+          <span class="item__naam"></span>
+          <span class="item__hoeveelheid"></span>
+        </span>
+        <button type="button" class="item__delete" aria-label="Item verwijderen">
+          <span aria-hidden="true">✕</span>
+        </button>
+      </div>
+      <div class="item__prijs-rij" hidden>
+        <input
+          type="number"
+          class="item__prijs-input"
+          inputmode="decimal"
+          step="0.01"
+          min="0"
+          placeholder="Prijs (€)"
+          aria-label="Prijs in euro's"
+        />
+        <input
+          type="text"
+          class="item__winkel-input"
+          list="winkel-suggesties"
+          placeholder="Winkel"
+          aria-label="Winkel"
+        />
+      </div>
     </li>
   </template>
+
+  <datalist id="winkel-suggesties"></datalist>
 
   <script type="module" src="app.js"></script>
 </body>
