@@ -29,6 +29,11 @@ const DATUM_FORMAT = new Intl.DateTimeFormat("nl-NL", {
   year: "numeric",
 });
 
+const PRIJS_FORMAT = new Intl.NumberFormat("nl-NL", {
+  style: "currency",
+  currency: "EUR",
+});
+
 const geschiedenisQuery = query(geschiedenisRef, orderBy("gekocht", "desc"), limit(1000));
 onSnapshot(
   geschiedenisQuery,
@@ -47,24 +52,47 @@ function aggregeer(aankopen) {
 
   for (const aankoop of aankopen) {
     const sleutel = aankoop.naam.trim().toLowerCase();
-    const bestaand = perProduct.get(sleutel);
-    if (bestaand) {
-      bestaand.aantal += 1;
-      if (aankoop.gekocht > bestaand.laatsteGekocht) {
-        bestaand.laatsteGekocht = aankoop.gekocht;
-        bestaand.categorie = aankoop.categorie;
-      }
-    } else {
-      perProduct.set(sleutel, {
+    let product = perProduct.get(sleutel);
+    if (!product) {
+      product = {
         naam: aankoop.naam,
         categorie: aankoop.categorie || "Overig",
-        aantal: 1,
+        aantal: 0,
         laatsteGekocht: aankoop.gekocht,
-      });
+        winkels: new Map(),
+      };
+      perProduct.set(sleutel, product);
+    }
+
+    product.aantal += 1;
+    if (aankoop.gekocht > product.laatsteGekocht) {
+      product.laatsteGekocht = aankoop.gekocht;
+      product.categorie = aankoop.categorie || product.categorie;
+    }
+
+    if (aankoop.winkel && typeof aankoop.prijs === "number") {
+      const bestaandeWinkel = product.winkels.get(aankoop.winkel) || {
+        totaalPrijs: 0,
+        aantalMetPrijs: 0,
+      };
+      bestaandeWinkel.totaalPrijs += aankoop.prijs;
+      bestaandeWinkel.aantalMetPrijs += 1;
+      product.winkels.set(aankoop.winkel, bestaandeWinkel);
     }
   }
 
-  return Array.from(perProduct.values()).sort((a, b) => b.aantal - a.aantal);
+  return Array.from(perProduct.values())
+    .map((product) => ({
+      ...product,
+      winkels: Array.from(product.winkels.entries())
+        .map(([winkel, data]) => ({
+          winkel,
+          gemiddeldePrijs: data.totaalPrijs / data.aantalMetPrijs,
+          aantalMetPrijs: data.aantalMetPrijs,
+        }))
+        .sort((a, b) => a.gemiddeldePrijs - b.gemiddeldePrijs),
+    }))
+    .sort((a, b) => b.aantal - a.aantal);
 }
 
 function render(producten) {
@@ -112,7 +140,37 @@ function buildStatsRow(product, maxAantal) {
   meta.textContent = `${product.categorie} · laatst gekocht ${DATUM_FORMAT.format(new Date(product.laatsteGekocht))}`;
 
   li.append(top, bar, meta);
+
+  if (product.winkels.length > 0) {
+    li.appendChild(buildWinkelVergelijking(product.winkels));
+  }
+
   return li;
+}
+
+function buildWinkelVergelijking(winkels) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "stats-row__winkels";
+
+  winkels.forEach((winkel, index) => {
+    const rij = document.createElement("div");
+    rij.className = "stats-row__winkel";
+    if (index === 0) rij.classList.add("stats-row__winkel--goedkoopst");
+
+    const naam = document.createElement("span");
+    naam.className = "stats-row__winkel-naam";
+    naam.textContent = index === 0 ? `🏆 ${winkel.winkel}` : winkel.winkel;
+
+    const prijs = document.createElement("span");
+    prijs.className = "stats-row__winkel-prijs";
+    const suffix = winkel.aantalMetPrijs > 1 ? " gem." : "";
+    prijs.textContent = `${PRIJS_FORMAT.format(winkel.gemiddeldePrijs)}${suffix}`;
+
+    rij.append(naam, prijs);
+    wrapper.appendChild(rij);
+  });
+
+  return wrapper;
 }
 
 function updateStatus() {
