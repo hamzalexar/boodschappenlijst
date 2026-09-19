@@ -24,6 +24,11 @@ en de site is gratis te hosten via GitHub Pages.
 - De app werkt ook offline (bijv. slechte ontvangst in de winkel): items die
   je toevoegt of afvinkt worden bewaard en gesynchroniseerd zodra er weer
   verbinding is. De statusindicator rechtsboven toont Online/Offline.
+- Onderaan de pagina staat een link **"Bekijk koopstatistieken"**: die toont
+  per product hoe vaak je het hebt afgevinkt en wanneer voor het laatst.
+  Elke keer dat je een item aanvinkt (niet bij het ongedaan maken) wordt dat
+  gelogd; producten met dezelfde naam (ongeacht hoofdletters/spaties) worden
+  samengevoegd.
 
 ### ⚠️ De link is privé — behandel hem als een wachtwoord
 
@@ -98,14 +103,24 @@ live.
 
 | Bestand              | Doel                                              |
 | --------------------- | -------------------------------------------------- |
-| `index.html`          | Pagina-structuur                                   |
+| `index.html`          | Pagina-structuur van de lijst                      |
+| `statistieken.html`   | Pagina-structuur van de statistieken                |
 | `style.css`           | Styling (mobile-first, licht + donker thema)       |
-| `app.js`              | Alle logica: lijst-code, Firestore, UI-updates     |
+| `app.js`              | Lijstlogica: Firestore, toevoegen/afvinken, UI     |
+| `statistieken.js`     | Logica voor de statistiekenpagina                  |
+| `lijst-code.js`       | Gedeeld: bepaalt de lijst-code uit URL/localStorage |
 | `firebase-config.js`  | Jouw Firebase-projectgegevens                      |
 | `firestore.rules`     | Beveiligingsregels voor Firestore                  |
 | `manifest.json`       | PWA-manifest (naam, iconen, kleuren)               |
 | `service-worker.js`   | Cachet de app-shell voor offline gebruik            |
 | `icons/`              | App-iconen (SVG + PNG)                             |
+
+Firestore-structuur per lijst:
+
+```
+lijsten/{lijstCode}/items/{itemId}         → huidige boodschappenlijst
+lijsten/{lijstCode}/geschiedenis/{id}      → log van elke keer dat iets is afgevinkt
+```
 
 ## Later uit te breiden
 
