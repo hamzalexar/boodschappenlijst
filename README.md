@@ -69,6 +69,20 @@ lijst-codes kan opsommen of een lijst kan vinden zonder de exacte,
 willekeurige code uit de link te kennen — precies zoals bij een gedeelde
 link naar bijvoorbeeld een Google Doc.
 
+### GitHub geeft een "Possible valid secret detected"-melding — dat is normaal
+
+GitHub's geautomatiseerde secret-scanner herkent elke string die op een
+Google API-key lijkt en waarschuwt altijd, ongeacht de context. Voor een
+Firebase-webconfig is dat een verwachte, onschuldige melding — zie hierboven
+waarom. Je kunt hem in de repository onder **Security → Secret scanning
+alerts** afsluiten als "False positive" of "Won't fix".
+
+Wil je extra hardening, los van de Firestore-regels? Ga naar
+[Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
+(zelfde project) en beperk de API-key onder "Application restrictions" tot
+je eigen domein (bijv. `https://<jouw-gebruikersnaam>.github.io/*`), zodat
+de key sowieso nergens anders werkt.
+
 ## GitHub Pages activeren
 
 1. Push deze repository naar GitHub (als dat nog niet is gebeurd).
