@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Producten · Boodschappenlijst</title>
+  <meta name="description" content="Corrigeer de categorie van eerder gekochte producten." />
+  <meta name="theme-color" content="#2e7d32" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0f1a0f" media="(prefers-color-scheme: dark)" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="app-header__top">
+        <h1>🏷️ Producten</h1>
+        <span id="status-indicator" class="status" aria-live="polite">
+          <span class="status__dot"></span>
+          <span class="status__label">Verbinden…</span>
+        </span>
+      </div>
+      <p class="stats-intro">
+        Staat de categorie niet goed (bijv. "Overig")? Wijzig ze hier — dat
+        past meteen alle eerdere aankopen van dit product aan.
+      </p>
+    </header>
+
+    <main>
+      <div id="empty-state" class="empty-state" hidden>
+        <p class="empty-state__emoji" aria-hidden="true">🏷️</p>
+        <p>Nog geen producten in de geschiedenis.</p>
+        <p class="empty-state__hint">Vink een paar boodschappen af — dan verschijnen hier producten.</p>
+      </div>
+
+      <ul id="producten-lijst" class="item-list" hidden></ul>
+    </main>
+
+    <footer class="app-footer">
+      <p><a id="statistieken-link" href="statistieken.html">📊 Naar de statistieken</a></p>
+      <p><a id="terug-link" href="index.html">← Terug naar de lijst</a></p>
+    </footer>
+  </div>
+
+  <script type="module" src="producten.js"></script>
+</body>
+</html>
