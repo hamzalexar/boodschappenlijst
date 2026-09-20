@@ -19,6 +19,7 @@ import {
 import { firebaseConfig } from "./firebase-config.js";
 import { bepaalLijstCode } from "./lijst-code.js";
 import { herkenCategorie } from "./product-categorieen.js";
+import { WINKELS_BELGIE } from "./winkels-belgie.js";
 
 const CATEGORIE_VOLGORDE = [
   "Groenten & fruit",
@@ -47,6 +48,64 @@ const categoryTemplate = document.getElementById("category-group-template");
 const itemTemplate = document.getElementById("item-template");
 const statsLink = document.getElementById("stats-link");
 const winkelDatalist = document.getElementById("winkel-suggesties");
+const prijsMelding = document.getElementById("prijs-melding");
+const prijsMeldingTekst = document.getElementById("prijs-melding-tekst");
+const prijsMeldingSluiten = document.getElementById("prijs-melding-sluiten");
+
+const PRIJS_FORMAT = new Intl.NumberFormat("nl-BE", { style: "currency", currency: "EUR" });
+const PRIJSVERSCHIL_DREMPEL = 0.3;
+
+let prijsMeldingTimeout = null;
+function toonPrijsMelding(tekst) {
+  prijsMeldingTekst.textContent = tekst;
+  prijsMelding.hidden = false;
+  clearTimeout(prijsMeldingTimeout);
+  prijsMeldingTimeout = setTimeout(() => {
+    prijsMelding.hidden = true;
+  }, 7000);
+}
+prijsMeldingSluiten.addEventListener("click", () => {
+  prijsMelding.hidden = true;
+  clearTimeout(prijsMeldingTimeout);
+});
+
+// Kijkt in de koopgeschiedenis van deze lijst of hetzelfde product ooit
+// duidelijk goedkoper (>= drempel) bij een andere winkel is gekocht, en
+// toont dan een melding. Puur ter info: er wordt niets aangepast.
+async function controleerPrijsVergelijking(item, prijs, winkel) {
+  if (typeof prijs !== "number" || !winkel) return;
+  try {
+    const snapshot = await getDocs(query(geschiedenisRef, limit(500)));
+    const sleutel = item.naam.trim().toLowerCase();
+    let goedkoopsteAndereWinkel = null;
+
+    snapshot.forEach((d) => {
+      const data = d.data();
+      if (
+        data.naam &&
+        data.naam.trim().toLowerCase() === sleutel &&
+        data.winkel &&
+        data.winkel !== winkel &&
+        typeof data.prijs === "number" &&
+        (!goedkoopsteAndereWinkel || data.prijs < goedkoopsteAndereWinkel.prijs)
+      ) {
+        goedkoopsteAndereWinkel = { winkel: data.winkel, prijs: data.prijs };
+      }
+    });
+
+    if (
+      goedkoopsteAndereWinkel &&
+      prijs - goedkoopsteAndereWinkel.prijs >= PRIJSVERSCHIL_DREMPEL - 0.001
+    ) {
+      const verschil = PRIJS_FORMAT.format(prijs - goedkoopsteAndereWinkel.prijs);
+      toonPrijsMelding(
+        `💡 ${item.naam} was bij ${goedkoopsteAndereWinkel.winkel} ${verschil} goedkoper: ${PRIJS_FORMAT.format(goedkoopsteAndereWinkel.prijs)} in plaats van ${PRIJS_FORMAT.format(prijs)} bij ${winkel}.`
+      );
+    }
+  } catch (err) {
+    console.warn("Kon prijsvergelijking niet uitvoeren:", err);
+  }
+}
 
 // --- Automatische categorie-herkenning bij het toevoegen ---
 // Zolang de gebruiker de categorie niet zelf heeft aangepast, mag het
@@ -88,24 +147,65 @@ try {
 const itemsRef = collection(db, "lijsten", lijstCode, "items");
 const geschiedenisRef = collection(db, "lijsten", lijstCode, "geschiedenis");
 
-// Vult de datalist met winkels die eerder zijn ingevuld, als hulp bij het
-// invullen (niet verplicht: vrije tekst blijft mogelijk).
+// Vult de datalist met bekende Belgische ketens, aangevuld met winkels die
+// je zelf eerder hebt ingevuld (niet verplicht: vrije tekst blijft mogelijk).
+const winkelSuggesties = new Set(WINKELS_BELGIE);
 getDocs(query(geschiedenisRef, orderBy("gekocht", "desc"), limit(200)))
   .then((snapshot) => {
-    const winkels = new Set();
     snapshot.forEach((d) => {
       const winkel = d.data().winkel;
-      if (winkel) winkels.add(winkel);
+      if (winkel) winkelSuggesties.add(winkel);
     });
-    for (const winkel of winkels) {
+  })
+  .catch((err) => console.warn("Kon winkel-suggesties niet laden:", err))
+  .finally(() => {
+    for (const winkel of winkelSuggesties) {
       const option = document.createElement("option");
       option.value = winkel;
       winkelDatalist.appendChild(option);
     }
-  })
-  .catch((err) => console.warn("Kon winkel-suggesties niet laden:", err));
+  });
+
+// --- Sessie-winkel ---
+// De eerste winkel die je tijdens dit bezoek invult, wordt onthouden
+// (per tabblad/sessie, niet blijvend) en automatisch toegepast op alle
+// items die je daarna afvinkt — zodat je "Lidl" maar één keer hoeft te
+// typen voor een hele boodschappentrip. Een handmatige wijziging bij één
+// item verandert deze sessie-winkel niet voor de rest van de lijst.
+const SESSIE_WINKEL_KEY = `boodschappenlijst:sessiewinkel:${lijstCode}`;
+
+function leesSessieWinkel() {
+  try {
+    return sessionStorage.getItem(SESSIE_WINKEL_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function stelSessieWinkelInAlsNogNiets(winkel) {
+  if (!winkel || leesSessieWinkel()) return;
+  try {
+    sessionStorage.setItem(SESSIE_WINKEL_KEY, winkel);
+  } catch {
+    return;
+  }
+
+  // Vul ook met terugwerkende kracht de winkel in bij al-afgevinkte items
+  // in deze lijst die nog geen winkel hebben.
+  const teVullen = huidigeItems.filter((i) => i.afgevinkt && !i.winkel);
+  if (teVullen.length === 0) return;
+  const batch = writeBatch(db);
+  for (const i of teVullen) {
+    batch.update(doc(itemsRef, i.id), { winkel });
+  }
+  batch.commit().catch((err) => console.warn("Kon winkel niet met terugwerkende kracht invullen:", err));
+}
 
 let huidigeItems = [];
+// Onthoudt welk item net is afgevinkt, zodat we na het herbouwen van de
+// lijst automatisch het prijsveld van dát item kunnen focussen — een
+// zachte aansporing om de prijs meteen in te vullen.
+let itemDatVersGevinktIs = null;
 
 const itemsQuery = query(itemsRef, orderBy("aangemaakt", "asc"));
 onSnapshot(
@@ -155,6 +255,17 @@ function render(items) {
   }
 
   herstelFocus(focusInfo);
+  focusPrijsVanNetAfgevinktItem();
+}
+
+function focusPrijsVanNetAfgevinktItem() {
+  if (!itemDatVersGevinktIs) return;
+  const id = itemDatVersGevinktIs;
+  itemDatVersGevinktIs = null;
+  const prijsVeld = listContainer.querySelector(
+    `.item__prijs-input[data-item-id="${CSS.escape(id)}"]`
+  );
+  if (prijsVeld) prijsVeld.focus();
 }
 
 function bewaarFocus() {
@@ -192,7 +303,19 @@ function buildItemNode(item) {
   const checkbox = li.querySelector(".item__checkbox");
   checkbox.checked = Boolean(item.afgevinkt);
   checkbox.setAttribute("aria-label", `${item.naam} afvinken`);
-  checkbox.addEventListener("change", () => toggleAfgevinkt(item, checkbox.checked));
+  checkbox.addEventListener("change", () => {
+    const afgevinkt = checkbox.checked;
+    toggleAfgevinkt(item, afgevinkt);
+    if (afgevinkt) {
+      const sessieWinkel = leesSessieWinkel();
+      if (sessieWinkel && !item.winkel) {
+        updateDoc(doc(itemsRef, item.id), { winkel: sessieWinkel }).catch((err) =>
+          console.error("Kon winkel niet automatisch invullen:", err)
+        );
+      }
+      itemDatVersGevinktIs = item.id;
+    }
+  });
 
   li.querySelector(".item__naam").textContent = item.naam;
   li.querySelector(".item__hoeveelheid").textContent = item.hoeveelheid ? `· ${item.hoeveelheid}` : "";
@@ -213,15 +336,28 @@ function buildItemNode(item) {
   prijsInput.addEventListener("blur", () => {
     const ruw = prijsInput.value.trim().replace(",", ".");
     const prijs = ruw === "" ? null : Math.round(parseFloat(ruw) * 100) / 100;
-    updateDoc(doc(itemsRef, item.id), { prijs: Number.isFinite(prijs) ? prijs : null }).catch(
-      (err) => console.error("Kon prijs niet opslaan:", err)
+    const prijsGeldig = Number.isFinite(prijs) ? prijs : null;
+    const oudePrijs = item.prijs != null ? item.prijs : null;
+    updateDoc(doc(itemsRef, item.id), { prijs: prijsGeldig }).catch((err) =>
+      console.error("Kon prijs niet opslaan:", err)
     );
+    if (prijsGeldig !== oudePrijs) {
+      controleerPrijsVergelijking(item, prijsGeldig, winkelInput.value.trim() || null);
+    }
   });
 
   winkelInput.addEventListener("blur", () => {
-    updateDoc(doc(itemsRef, item.id), { winkel: winkelInput.value.trim() || null }).catch((err) =>
+    const winkel = winkelInput.value.trim() || null;
+    const oudeWinkel = item.winkel || null;
+    updateDoc(doc(itemsRef, item.id), { winkel }).catch((err) =>
       console.error("Kon winkel niet opslaan:", err)
     );
+    stelSessieWinkelInAlsNogNiets(winkel);
+    if (winkel !== oudeWinkel) {
+      const ruw = prijsInput.value.trim().replace(",", ".");
+      const prijs = ruw === "" ? null : Math.round(parseFloat(ruw) * 100) / 100;
+      controleerPrijsVergelijking(item, Number.isFinite(prijs) ? prijs : null, winkel);
+    }
   });
 
   return li;

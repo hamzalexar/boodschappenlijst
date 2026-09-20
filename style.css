@@ -521,3 +521,60 @@ select {
     width: 120px;
   }
 }
+
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 8px 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 50;
+  font-size: 0.9rem;
+  animation: toast-in 0.2s ease;
+}
+
+.toast[hidden] {
+  display: none;
+}
+
+@keyframes toast-in {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast__tekst {
+  flex: 1;
+}
+
+.toast__sluiten {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.toast__sluiten:hover,
+.toast__sluiten:focus-visible {
+  background: var(--color-surface-alt);
+  outline: none;
+}
