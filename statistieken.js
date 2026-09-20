@@ -23,13 +23,13 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const geschiedenisRef = collection(db, "lijsten", lijstCode, "geschiedenis");
 
-const DATUM_FORMAT = new Intl.DateTimeFormat("nl-NL", {
+const DATUM_FORMAT = new Intl.DateTimeFormat("nl-BE", {
   day: "numeric",
   month: "short",
   year: "numeric",
 });
 
-const PRIJS_FORMAT = new Intl.NumberFormat("nl-NL", {
+const PRIJS_FORMAT = new Intl.NumberFormat("nl-BE", {
   style: "currency",
   currency: "EUR",
 });

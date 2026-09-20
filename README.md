@@ -36,12 +36,23 @@ en de site is gratis te hosten via GitHub Pages.
   Producten met dezelfde naam (ongeacht hoofdletters/spaties) worden
   samengevoegd.
 - Zodra je een item afvinkt, verschijnen er twee optionele velden: **Prijs**
-  en **Winkel**. Vul je die in (bijv. bij het scannen aan de kassa), dan
-  onthoudt de app dat. Op de statistiekenpagina zie je vervolgens per
-  product een vergelijking tussen winkels, met de goedkoopste bovenaan (🏆)
-  — zo bouw je op termijn op wat waar het voordeligst is. Deze velden zijn
-  optioneel: laat je ze leeg, dan telt het item nog gewoon mee voor "hoe
-  vaak gekocht".
+  en **Winkel** — de focus springt er automatisch naartoe als zachte
+  herinnering om de prijs meteen in te vullen. De **winkel** hoef je maar
+  één keer per bezoek te typen: de eerste winkel die je invult, wordt die
+  sessie onthouden en automatisch toegepast op alle andere items die je
+  daarna afvinkt (ook met terugwerkende kracht op al-afgevinkte items).
+  Kies je voor één item bewust een andere winkel, dan blijft die uitzondering
+  beperkt tot dat ene item. De winkel-suggesties bevatten bekende Belgische
+  ketens (Colruyt, Delhaize, Carrefour, Aldi, Lidl, …) plus winkels die je
+  zelf eerder hebt ingevuld — zie [`winkels-belgie.js`](winkels-belgie.js).
+  Deze velden blijven optioneel: laat je ze leeg, dan telt het item nog
+  gewoon mee voor "hoe vaak gekocht".
+- Vul je een prijs én winkel in, en blijkt uit jullie eigen geschiedenis dat
+  je hetzelfde product ooit €0,30 of meer goedkoper hebt gekocht bij een
+  andere winkel, dan verschijnt er kort een melding onderin het scherm.
+- Op de statistiekenpagina zie je per product een vergelijking tussen
+  winkels, met de goedkoopste bovenaan (🏆) — zo bouw je op termijn op wat
+  waar het voordeligst is.
 
 ### ⚠️ De link is privé — behandel hem als een wachtwoord
 
