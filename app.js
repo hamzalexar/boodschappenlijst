@@ -40,6 +40,7 @@ const categorieSelect = document.getElementById("item-categorie");
 const listContainer = document.getElementById("list-container");
 const emptyState = document.getElementById("empty-state");
 const counterEl = document.getElementById("counter");
+const totaalEl = document.getElementById("totaal");
 const shareButton = document.getElementById("share-button");
 const clearCheckedButton = document.getElementById("clear-checked-button");
 const statusIndicator = document.getElementById("status-indicator");
@@ -271,12 +272,29 @@ function focusPrijsVanNetAfgevinktItem() {
 function bewaarFocus() {
   const actief = document.activeElement;
   if (!actief || !listContainer.contains(actief) || !actief.dataset.itemId) return null;
+  let veld = null;
+  if (actief.classList.contains("item__prijs-input")) veld = "prijs";
+  else if (actief.classList.contains("item__winkel-input")) veld = "winkel";
+  else if (actief.classList.contains("item__aantal-input")) veld = "aantal";
+  if (!veld) return null;
+
+  // type="number"-velden (prijs, aantal) ondersteunen geen selectiepositie
+  // en gooien een fout bij het uitlezen ervan in sommige browsers.
+  let selectionStart = null;
+  let selectionEnd = null;
+  try {
+    selectionStart = actief.selectionStart;
+    selectionEnd = actief.selectionEnd;
+  } catch {
+    // negeren — dan herstellen we straks alleen focus + waarde, geen cursor.
+  }
+
   return {
     itemId: actief.dataset.itemId,
-    veld: actief.classList.contains("item__prijs-input") ? "prijs" : "winkel",
+    veld,
     waarde: actief.value,
-    selectionStart: actief.selectionStart,
-    selectionEnd: actief.selectionEnd,
+    selectionStart,
+    selectionEnd,
   };
 }
 
@@ -291,7 +309,11 @@ function herstelFocus(focusInfo) {
   nieuwElement.value = focusInfo.waarde;
   nieuwElement.focus();
   if (typeof focusInfo.selectionStart === "number") {
-    nieuwElement.setSelectionRange(focusInfo.selectionStart, focusInfo.selectionEnd);
+    try {
+      nieuwElement.setSelectionRange(focusInfo.selectionStart, focusInfo.selectionEnd);
+    } catch {
+      // negeren — niet elk inputtype ondersteunt dit.
+    }
   }
 }
 
@@ -319,6 +341,17 @@ function buildItemNode(item) {
 
   li.querySelector(".item__naam").textContent = item.naam;
   li.querySelector(".item__hoeveelheid").textContent = item.hoeveelheid ? `· ${item.hoeveelheid}` : "";
+
+  const aantalInput = li.querySelector(".item__aantal-input");
+  aantalInput.value = typeof item.aantal === "number" && item.aantal > 0 ? item.aantal : 1;
+  aantalInput.setAttribute("aria-label", `Aantal voor ${item.naam}`);
+  aantalInput.dataset.itemId = item.id;
+  aantalInput.addEventListener("blur", () => {
+    const aantal = Math.max(1, Math.round(parseFloat(aantalInput.value)) || 1);
+    updateDoc(doc(itemsRef, item.id), { aantal }).catch((err) =>
+      console.error("Kon aantal niet opslaan:", err)
+    );
+  });
 
   const deleteButton = li.querySelector(".item__delete");
   deleteButton.setAttribute("aria-label", `${item.naam} verwijderen`);
@@ -364,9 +397,22 @@ function buildItemNode(item) {
 }
 
 function updateTeller(items) {
-  const totaal = items.length;
+  const aantalItems = items.length;
   const afgevinkt = items.filter((item) => item.afgevinkt).length;
-  counterEl.textContent = `${afgevinkt} van ${totaal} items afgevinkt`;
+  counterEl.textContent = `${afgevinkt} van ${aantalItems} items afgevinkt`;
+
+  const totaalPrijs = items.reduce((som, item) => {
+    if (!item.afgevinkt || typeof item.prijs !== "number") return som;
+    const aantal = typeof item.aantal === "number" && item.aantal > 0 ? item.aantal : 1;
+    return som + item.prijs * aantal;
+  }, 0);
+
+  if (totaalPrijs > 0) {
+    totaalEl.textContent = `Totaal: ${PRIJS_FORMAT.format(totaalPrijs)}`;
+    totaalEl.hidden = false;
+  } else {
+    totaalEl.hidden = true;
+  }
 }
 
 // --- Firestore-acties ---
@@ -383,6 +429,7 @@ function bouwGeschiedenisRecord(item) {
     naam: item.naam,
     categorie: item.categorie || "Overig",
     hoeveelheid: item.hoeveelheid || null,
+    aantal: typeof item.aantal === "number" && item.aantal > 0 ? item.aantal : 1,
     prijs: typeof item.prijs === "number" ? item.prijs : null,
     winkel: item.winkel || null,
     gekocht: Date.now(),
@@ -417,6 +464,7 @@ addForm.addEventListener("submit", async (event) => {
       hoeveelheid: hoeveelheid || null,
       categorie,
       afgevinkt: false,
+      aantal: 1,
       aangemaakt: Date.now(),
     });
     naamInput.value = "";

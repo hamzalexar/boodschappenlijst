@@ -27,6 +27,7 @@
       <div class="counter" id="counter" aria-live="polite">
         0 van 0 items afgevinkt
       </div>
+      <div class="totaal" id="totaal" aria-live="polite" hidden></div>
 
       <div class="header-actions">
         <button id="share-button" type="button" class="btn btn--secondary">
@@ -126,6 +127,17 @@
           <span class="item__naam"></span>
           <span class="item__hoeveelheid"></span>
         </span>
+        <span class="item__aantal-wrap">
+          <span class="item__aantal-maal" aria-hidden="true">×</span>
+          <input
+            type="number"
+            class="item__aantal-input"
+            inputmode="numeric"
+            min="1"
+            step="1"
+            aria-label="Aantal"
+          />
+        </span>
         <button type="button" class="item__delete" aria-label="Item verwijderen">
           <span aria-hidden="true">✕</span>
         </button>
@@ -137,8 +149,8 @@
           inputmode="decimal"
           step="0.01"
           min="0"
-          placeholder="Prijs (€)"
-          aria-label="Prijs in euro's"
+          placeholder="Prijs/stuk (€)"
+          aria-label="Prijs per stuk in euro's"
         />
         <input
           type="text"

@@ -128,6 +128,13 @@ select {
   color: var(--color-text-muted);
 }
 
+.totaal {
+  margin-top: 4px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
 .header-actions {
   display: flex;
   gap: 8px;
@@ -364,6 +371,30 @@ select {
 .item.is-afgevinkt .item__hoeveelheid {
   text-decoration: line-through;
   color: var(--color-text-muted);
+}
+
+.item__aantal-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.item__aantal-maal {
+  font-size: 0.9rem;
+}
+
+.item__aantal-input {
+  width: 40px;
+  min-height: 36px;
+  padding: 0 4px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.9rem;
 }
 
 .item__delete {
