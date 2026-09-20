@@ -33,9 +33,16 @@
         <p class="empty-state__hint">Vink een paar boodschappen af — dan verschijnen hier statistieken.</p>
       </div>
 
-      <section id="datum-sectie" hidden>
-        <h2 class="category-group__title">Uitgaven per dag</h2>
-        <ul id="datum-lijst" class="stats-list"></ul>
+      <section id="maand-sectie" hidden>
+        <div class="stats-section-header">
+          <h2 class="category-group__title">Uitgaven per maand</h2>
+          <label for="maand-categorie-filter" class="visually-hidden">Filter op categorie</label>
+          <select id="maand-categorie-filter" class="maand-filter"></select>
+        </div>
+        <ul id="maand-lijst" class="stats-list"></ul>
+        <p id="maand-leeg" class="empty-state__hint" hidden>
+          Geen uitgaven met deze categorie.
+        </p>
       </section>
 
       <section id="product-sectie" hidden>
@@ -45,6 +52,7 @@
     </main>
 
     <footer class="app-footer">
+      <p><a id="producten-link" href="producten.html">🏷️ Categorieën corrigeren</a></p>
       <p><a id="terug-link" href="index.html">← Terug naar de lijst</a></p>
     </footer>
   </div>

@@ -609,3 +609,53 @@ select {
   background: var(--color-surface-alt);
   outline: none;
 }
+
+.stats-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stats-section-header .category-group__title {
+  margin: 0;
+}
+
+.maand-filter {
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  max-width: 55%;
+}
+
+.product-rij {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  min-height: var(--tap-min);
+}
+
+.product-rij__naam {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.product-rij select {
+  min-height: 40px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  max-width: 55%;
+}

@@ -9,18 +9,34 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { bepaalLijstCode } from "./lijst-code.js";
+import { CATEGORIE_VOLGORDE } from "./categorieen.js";
 
 const statusIndicator = document.getElementById("status-indicator");
 const statusLabel = statusIndicator.querySelector(".status__label");
 const emptyState = document.getElementById("empty-state");
-const datumSectie = document.getElementById("datum-sectie");
-const datumLijst = document.getElementById("datum-lijst");
+const maandSectie = document.getElementById("maand-sectie");
+const maandLijst = document.getElementById("maand-lijst");
+const maandLeeg = document.getElementById("maand-leeg");
+const maandFilter = document.getElementById("maand-categorie-filter");
 const productSectie = document.getElementById("product-sectie");
 const statsList = document.getElementById("stats-list");
 const terugLink = document.getElementById("terug-link");
+const productenLink = document.getElementById("producten-link");
 
 const lijstCode = bepaalLijstCode();
 terugLink.href = `index.html?lijst=${encodeURIComponent(lijstCode)}`;
+productenLink.href = `producten.html?lijst=${encodeURIComponent(lijstCode)}`;
+
+const alleCategorieenOptie = document.createElement("option");
+alleCategorieenOptie.value = "";
+alleCategorieenOptie.textContent = "Alle categorieën";
+maandFilter.appendChild(alleCategorieenOptie);
+for (const categorie of CATEGORIE_VOLGORDE) {
+  const option = document.createElement("option");
+  option.value = categorie;
+  option.textContent = categorie;
+  maandFilter.appendChild(option);
+}
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -32,17 +48,25 @@ const DATUM_FORMAT = new Intl.DateTimeFormat("nl-BE", {
   year: "numeric",
 });
 
+const MAAND_FORMAT = new Intl.DateTimeFormat("nl-BE", {
+  month: "long",
+  year: "numeric",
+});
+
 const PRIJS_FORMAT = new Intl.NumberFormat("nl-BE", {
   style: "currency",
   currency: "EUR",
 });
 
+let laatsteAankopen = [];
+maandFilter.addEventListener("change", () => render(laatsteAankopen));
+
 const geschiedenisQuery = query(geschiedenisRef, orderBy("gekocht", "desc"), limit(1000));
 onSnapshot(
   geschiedenisQuery,
   (snapshot) => {
-    const aankopen = snapshot.docs.map((d) => d.data());
-    render(aankopen);
+    laatsteAankopen = snapshot.docs.map((d) => d.data());
+    render(laatsteAankopen);
   },
   (error) => {
     console.error("Fout bij ontvangen van de statistieken:", error);
@@ -98,41 +122,44 @@ function aggregeerPerProduct(aankopen) {
     .sort((a, b) => b.aantal - a.aantal);
 }
 
-// Groepeert per kalenderdag (op basis van de aankoopdatum) en telt
-// prijs × aantal op, voor de "Uitgaven per dag"-grafiek. Aankopen zonder
-// prijs tellen niet mee (er valt niets te berekenen).
-function aggregeerPerDatum(aankopen) {
-  const perDatum = new Map();
+// Groepeert per kalendermaand (op basis van de aankoopdatum) en telt
+// prijs × aantal op, voor de "Uitgaven per maand"-grafiek. Aankopen zonder
+// prijs tellen niet mee (er valt niets te berekenen). Met `categorieFilter`
+// tellen alleen aankopen van die categorie mee.
+function aggregeerPerMaand(aankopen, categorieFilter) {
+  const perMaand = new Map();
 
   for (const aankoop of aankopen) {
     if (typeof aankoop.prijs !== "number") continue;
+    if (categorieFilter && aankoop.categorie !== categorieFilter) continue;
     const aantal = typeof aankoop.aantal === "number" && aankoop.aantal > 0 ? aankoop.aantal : 1;
-    const sleutel = new Date(aankoop.gekocht).toISOString().slice(0, 10);
-    const bestaand = perDatum.get(sleutel) || { tijd: aankoop.gekocht, totaal: 0 };
+    const sleutel = new Date(aankoop.gekocht).toISOString().slice(0, 7);
+    const bestaand = perMaand.get(sleutel) || { tijd: aankoop.gekocht, totaal: 0 };
     bestaand.totaal += aankoop.prijs * aantal;
     bestaand.tijd = Math.max(bestaand.tijd, aankoop.gekocht);
-    perDatum.set(sleutel, bestaand);
+    perMaand.set(sleutel, bestaand);
   }
 
-  return Array.from(perDatum.values()).sort((a, b) => b.tijd - a.tijd);
+  return Array.from(perMaand.values()).sort((a, b) => b.tijd - a.tijd);
 }
 
 function render(aankopen) {
   if (aankopen.length === 0) {
     emptyState.hidden = false;
-    datumSectie.hidden = true;
+    maandSectie.hidden = true;
     productSectie.hidden = true;
     return;
   }
   emptyState.hidden = true;
 
-  const datums = aggregeerPerDatum(aankopen);
-  datumLijst.innerHTML = "";
-  datumSectie.hidden = datums.length === 0;
-  if (datums.length > 0) {
-    const maxTotaal = Math.max(...datums.map((d) => d.totaal));
-    for (const rij of datums) {
-      datumLijst.appendChild(buildDatumRow(rij, maxTotaal));
+  const maanden = aggregeerPerMaand(aankopen, maandFilter.value);
+  maandLijst.innerHTML = "";
+  maandSectie.hidden = false;
+  maandLeeg.hidden = maanden.length !== 0;
+  if (maanden.length > 0) {
+    const maxTotaal = Math.max(...maanden.map((m) => m.totaal));
+    for (const rij of maanden) {
+      maandLijst.appendChild(buildMaandRow(rij, maxTotaal));
     }
   }
 
@@ -147,22 +174,22 @@ function render(aankopen) {
   }
 }
 
-function buildDatumRow(rij, maxTotaal) {
+function buildMaandRow(rij, maxTotaal) {
   const li = document.createElement("li");
   li.className = "stats-row";
 
   const top = document.createElement("div");
   top.className = "stats-row__top";
 
-  const datumEl = document.createElement("span");
-  datumEl.className = "stats-row__naam";
-  datumEl.textContent = DATUM_FORMAT.format(new Date(rij.tijd));
+  const maandEl = document.createElement("span");
+  maandEl.className = "stats-row__naam";
+  maandEl.textContent = MAAND_FORMAT.format(new Date(rij.tijd));
 
   const totaalEl = document.createElement("span");
   totaalEl.className = "stats-row__aantal";
   totaalEl.textContent = PRIJS_FORMAT.format(rij.totaal);
 
-  top.append(datumEl, totaalEl);
+  top.append(maandEl, totaalEl);
 
   const bar = document.createElement("div");
   bar.className = "stats-row__bar";
