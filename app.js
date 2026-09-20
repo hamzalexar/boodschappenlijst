@@ -20,17 +20,7 @@ import { firebaseConfig } from "./firebase-config.js";
 import { bepaalLijstCode } from "./lijst-code.js";
 import { herkenCategorie } from "./product-categorieen.js";
 import { WINKELS_BELGIE } from "./winkels-belgie.js";
-
-const CATEGORIE_VOLGORDE = [
-  "Groenten & fruit",
-  "Zuivel",
-  "Vlees & vis",
-  "Brood",
-  "Droge voeding",
-  "Dranken",
-  "Huishouden",
-  "Overig",
-];
+import { CATEGORIE_VOLGORDE } from "./categorieen.js";
 
 // --- DOM-elementen ---
 const addForm = document.getElementById("add-form");
