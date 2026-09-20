@@ -49,9 +49,12 @@ en de site is gratis te hosten via GitHub Pages.
   Kies je voor één item bewust een andere winkel, dan blijft die uitzondering
   beperkt tot dat ene item. De winkel-suggesties bevatten bekende Belgische
   ketens (Colruyt, Delhaize, Carrefour, Aldi, Lidl, …) plus winkels die je
-  zelf eerder hebt ingevuld — zie [`winkels-belgie.js`](winkels-belgie.js).
-  Deze velden blijven optioneel: laat je ze leeg, dan telt het item nog
-  gewoon mee voor "hoe vaak gekocht".
+  zelf eerder hebt ingevuld. Deze velden blijven optioneel: laat je ze leeg,
+  dan telt het item nog gewoon mee voor "hoe vaak gekocht".
+- Via **"🏬 Beheer winkels"** onderaan de pagina open je een aparte pagina
+  waar je zelf winkels kunt toevoegen (bijv. een lokale buurtwinkel) en
+  ongewenste standaardwinkels kunt uitvinken zodat ze niet meer als
+  suggestie verschijnen. De vaste Belgische lijst blijft de basis.
 - Vul je een prijs én winkel in, en blijkt uit jullie eigen geschiedenis dat
   je hetzelfde product ooit €0,30 of meer goedkoper hebt gekocht bij een
   andere winkel, dan verschijnt er kort een melding onderin het scherm.
@@ -147,26 +150,31 @@ live.
 
 | Bestand              | Doel                                              |
 | --------------------- | -------------------------------------------------- |
-| `index.html`          | Pagina-structuur van de lijst                      |
-| `statistieken.html`   | Pagina-structuur van de statistieken                |
-| `producten.html`      | Pagina-structuur van de categorie-correctie         |
-| `style.css`           | Styling (mobile-first, licht + donker thema)       |
-| `app.js`              | Lijstlogica: Firestore, toevoegen/afvinken, UI     |
-| `statistieken.js`     | Logica voor de statistiekenpagina                  |
-| `producten.js`        | Logica voor het corrigeren van categorieën         |
-| `lijst-code.js`       | Gedeeld: bepaalt de lijst-code uit URL/localStorage |
-| `categorieen.js`      | Gedeeld: de vaste lijst met categorieën             |
-| `firebase-config.js`  | Jouw Firebase-projectgegevens                      |
-| `firestore.rules`     | Beveiligingsregels voor Firestore                  |
-| `manifest.json`       | PWA-manifest (naam, iconen, kleuren)               |
-| `service-worker.js`   | Cachet de app-shell voor offline gebruik            |
-| `icons/`              | App-iconen (SVG + PNG)                             |
+| `index.html`             | Pagina-structuur van de lijst                      |
+| `statistieken.html`      | Pagina-structuur van de statistieken                |
+| `producten.html`         | Pagina-structuur van de categorie-correctie         |
+| `winkels.html`           | Pagina-structuur van het winkelbeheer               |
+| `style.css`              | Styling (mobile-first, licht + donker thema)       |
+| `app.js`                 | Lijstlogica: Firestore, toevoegen/afvinken, UI     |
+| `statistieken.js`        | Logica voor de statistiekenpagina                  |
+| `producten.js`           | Logica voor het corrigeren van categorieën         |
+| `winkels.js`             | Logica voor het beheren van winkels                |
+| `lijst-code.js`          | Gedeeld: bepaalt de lijst-code uit URL/localStorage |
+| `categorieen.js`         | Gedeeld: de vaste lijst met categorieën             |
+| `winkel-instellingen.js` | Gedeeld: combineert standaard- en eigen winkels     |
+| `firebase-config.js`     | Jouw Firebase-projectgegevens                      |
+| `firestore.rules`        | Beveiligingsregels voor Firestore                  |
+| `manifest.json`          | PWA-manifest (naam, iconen, kleuren)               |
+| `service-worker.js`      | Cachet de app-shell voor offline gebruik            |
+| `icons/`                 | App-iconen (SVG + PNG)                             |
 
 Firestore-structuur per lijst:
 
 ```
-lijsten/{lijstCode}/items/{itemId}         → huidige boodschappenlijst
-lijsten/{lijstCode}/geschiedenis/{id}      → log van elke keer dat iets is afgevinkt
+lijsten/{lijstCode}/items/{itemId}              → huidige boodschappenlijst
+lijsten/{lijstCode}/geschiedenis/{id}           → log van elke keer dat iets is afgevinkt
+lijsten/{lijstCode}/winkels/{id}                → zelf toegevoegde winkels
+lijsten/{lijstCode}/instellingen/winkels        → verborgen standaardwinkels
 ```
 
 ## Later uit te breiden

@@ -18,10 +18,12 @@ const statusLabel = statusIndicator.querySelector(".status__label");
 const emptyState = document.getElementById("empty-state");
 const productenLijst = document.getElementById("producten-lijst");
 const statistiekenLink = document.getElementById("statistieken-link");
+const winkelsLink = document.getElementById("winkels-link");
 const terugLink = document.getElementById("terug-link");
 
 const lijstCode = bepaalLijstCode();
 statistiekenLink.href = `statistieken.html?lijst=${encodeURIComponent(lijstCode)}`;
+winkelsLink.href = `winkels.html?lijst=${encodeURIComponent(lijstCode)}`;
 terugLink.href = `index.html?lijst=${encodeURIComponent(lijstCode)}`;
 
 const app = initializeApp(firebaseConfig);

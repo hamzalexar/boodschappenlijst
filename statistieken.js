@@ -22,10 +22,12 @@ const productSectie = document.getElementById("product-sectie");
 const statsList = document.getElementById("stats-list");
 const terugLink = document.getElementById("terug-link");
 const productenLink = document.getElementById("producten-link");
+const winkelsLink = document.getElementById("winkels-link");
 
 const lijstCode = bepaalLijstCode();
 terugLink.href = `index.html?lijst=${encodeURIComponent(lijstCode)}`;
 productenLink.href = `producten.html?lijst=${encodeURIComponent(lijstCode)}`;
+winkelsLink.href = `winkels.html?lijst=${encodeURIComponent(lijstCode)}`;
 
 const alleCategorieenOptie = document.createElement("option");
 alleCategorieenOptie.value = "";
