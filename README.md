@@ -61,8 +61,18 @@ en de site is gratis te hosten via GitHub Pages.
   gaat vanzelf terug naar niets zodra je "Wis afgevinkte items" gebruikt.
 - Op de statistiekenpagina zie je, naast een vergelijking tussen winkels
   per product (goedkoopste bovenaan, 🏆), ook een grafiek **"Uitgaven per
-  dag"**: het totaalbedrag van elke boodschappentrip waarin je prijzen hebt
-  ingevuld, gesorteerd op datum.
+  maand"**: het totaalbedrag per kalendermaand waarin je prijzen hebt
+  ingevuld. Met de dropdown erboven filter je op één categorie (bijv. alleen
+  "Dranken"), om te zien wat je daaraan per maand uitgeeft.
+- Staat een product verkeerd gecategoriseerd (bijv. onder "Overig" terwijl
+  het eigenlijk Zuivel is)? Ga naar **"🏷️ Categorieën corrigeren"** onderaan
+  de statistiekenpagina. Die aparte Producten-pagina toont elk product dat
+  je ooit hebt gekocht met een dropdown; wijzig je die, dan wordt dat met
+  terugwerkende kracht toegepast op **alle** eerdere aankopen van dat
+  product in de geschiedenis (dus ook meteen zichtbaar in de grafieken).
+  Dit corrigeert alleen de geschiedenis, niet de automatische herkenning
+  bij het toevoegen (zie [`product-categorieen.js`](product-categorieen.js)
+  als je die zelf wilt verbeteren).
 
 ### ⚠️ De link is privé — behandel hem als een wachtwoord
 
@@ -139,10 +149,13 @@ live.
 | --------------------- | -------------------------------------------------- |
 | `index.html`          | Pagina-structuur van de lijst                      |
 | `statistieken.html`   | Pagina-structuur van de statistieken                |
+| `producten.html`      | Pagina-structuur van de categorie-correctie         |
 | `style.css`           | Styling (mobile-first, licht + donker thema)       |
 | `app.js`              | Lijstlogica: Firestore, toevoegen/afvinken, UI     |
 | `statistieken.js`     | Logica voor de statistiekenpagina                  |
+| `producten.js`        | Logica voor het corrigeren van categorieën         |
 | `lijst-code.js`       | Gedeeld: bepaalt de lijst-code uit URL/localStorage |
+| `categorieen.js`      | Gedeeld: de vaste lijst met categorieën             |
 | `firebase-config.js`  | Jouw Firebase-projectgegevens                      |
 | `firestore.rules`     | Beveiligingsregels voor Firestore                  |
 | `manifest.json`       | PWA-manifest (naam, iconen, kleuren)               |

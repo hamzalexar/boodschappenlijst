@@ -1,15 +1,18 @@
 // Verhoog dit versienummer bij elke wijziging aan de gecachete bestanden,
 // zodat gebruikers de nieuwe versie krijgen in plaats van een oude uit de cache.
-const CACHE_NAME = "boodschappenlijst-v7";
+const CACHE_NAME = "boodschappenlijst-v8";
 
 const APP_SHELL = [
   "./",
   "./index.html",
   "./statistieken.html",
+  "./producten.html",
   "./style.css",
   "./app.js",
   "./statistieken.js",
+  "./producten.js",
   "./lijst-code.js",
+  "./categorieen.js",
   "./product-categorieen.js",
   "./winkels-belgie.js",
   "./firebase-config.js",
