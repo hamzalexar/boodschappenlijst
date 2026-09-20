@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Winkels · Boodschappenlijst</title>
+  <meta name="description" content="Beheer de lijst met winkels die als suggestie verschijnen." />
+  <meta name="theme-color" content="#2e7d32" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0f1a0f" media="(prefers-color-scheme: dark)" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="app-header__top">
+        <h1>🏬 Winkels</h1>
+        <span id="status-indicator" class="status" aria-live="polite">
+          <span class="status__dot"></span>
+          <span class="status__label">Verbinden…</span>
+        </span>
+      </div>
+      <p class="stats-intro">
+        Dit bepaalt welke winkels als suggestie verschijnen bij het afvinken
+        van een item. Vrije tekst blijft daar altijd mogelijk.
+      </p>
+    </header>
+
+    <main>
+      <form id="eigen-winkel-form" class="add-form" autocomplete="off">
+        <div class="add-form__row">
+          <div class="field field--grow">
+            <label for="eigen-winkel-naam" class="visually-hidden">Naam van de winkel</label>
+            <input
+              id="eigen-winkel-naam"
+              type="text"
+              placeholder="Bijv. Buurtwinkel Jansens"
+              maxlength="60"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn--primary">Toevoegen</button>
+        </div>
+      </form>
+
+      <section>
+        <h2 class="category-group__title">Eigen winkels</h2>
+        <p id="eigen-leeg" class="empty-state__hint">
+          Nog geen eigen winkels toegevoegd.
+        </p>
+        <ul id="eigen-lijst" class="item-list"></ul>
+      </section>
+
+      <section>
+        <h2 class="category-group__title">Belgische standaardlijst</h2>
+        <p class="stats-intro">Vink uit om een winkel niet meer als suggestie te tonen.</p>
+        <ul id="standaard-lijst" class="item-list"></ul>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p><a id="statistieken-link" href="statistieken.html">📊 Naar de statistieken</a></p>
+      <p><a id="terug-link" href="index.html">← Terug naar de lijst</a></p>
+    </footer>
+  </div>
+
+  <script type="module" src="winkels.js"></script>
+</body>
+</html>

@@ -13,14 +13,15 @@ import {
   query,
   orderBy,
   limit,
+  getDoc,
   getDocs,
   writeBatch,
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { bepaalLijstCode } from "./lijst-code.js";
 import { herkenCategorie } from "./product-categorieen.js";
-import { WINKELS_BELGIE } from "./winkels-belgie.js";
 import { CATEGORIE_VOLGORDE } from "./categorieen.js";
+import { winkelsRef, instellingenRef, combineerWinkels } from "./winkel-instellingen.js";
 
 // --- DOM-elementen ---
 const addForm = document.getElementById("add-form");
@@ -38,6 +39,7 @@ const statusLabel = statusIndicator.querySelector(".status__label");
 const categoryTemplate = document.getElementById("category-group-template");
 const itemTemplate = document.getElementById("item-template");
 const statsLink = document.getElementById("stats-link");
+const winkelsLink = document.getElementById("winkels-link");
 const winkelDatalist = document.getElementById("winkel-suggesties");
 const prijsMelding = document.getElementById("prijs-melding");
 const prijsMeldingTekst = document.getElementById("prijs-melding-tekst");
@@ -121,6 +123,9 @@ const lijstCode = bepaalLijstCode();
 if (statsLink) {
   statsLink.href = `statistieken.html?lijst=${encodeURIComponent(lijstCode)}`;
 }
+if (winkelsLink) {
+  winkelsLink.href = `winkels.html?lijst=${encodeURIComponent(lijstCode)}`;
+}
 
 // --- Firebase / Firestore ---
 const app = initializeApp(firebaseConfig);
@@ -138,24 +143,39 @@ try {
 const itemsRef = collection(db, "lijsten", lijstCode, "items");
 const geschiedenisRef = collection(db, "lijsten", lijstCode, "geschiedenis");
 
-// Vult de datalist met bekende Belgische ketens, aangevuld met winkels die
-// je zelf eerder hebt ingevuld (niet verplicht: vrije tekst blijft mogelijk).
-const winkelSuggesties = new Set(WINKELS_BELGIE);
-getDocs(query(geschiedenisRef, orderBy("gekocht", "desc"), limit(200)))
-  .then((snapshot) => {
-    snapshot.forEach((d) => {
+// Vult de datalist met: de Belgische standaardlijst (min. de winkels die
+// je op de winkels-beheerpagina hebt verborgen), zelf toegevoegde winkels,
+// en winkels die je eerder hebt ingevuld (niet verplicht: vrije tekst
+// blijft altijd mogelijk).
+Promise.allSettled([
+  getDoc(instellingenRef(db, lijstCode)),
+  getDocs(winkelsRef(db, lijstCode)),
+  getDocs(query(geschiedenisRef, orderBy("gekocht", "desc"), limit(200))),
+]).then(([instellingenRes, eigenWinkelsRes, geschiedenisRes]) => {
+  const verborgenBuiltIn =
+    instellingenRes.status === "fulfilled" && instellingenRes.value.exists()
+      ? instellingenRes.value.data().verborgenBuiltIn || []
+      : [];
+  const eigenWinkels =
+    eigenWinkelsRes.status === "fulfilled"
+      ? eigenWinkelsRes.value.docs.map((d) => d.data())
+      : [];
+
+  const winkelSuggesties = new Set(combineerWinkels(verborgenBuiltIn, eigenWinkels));
+
+  if (geschiedenisRes.status === "fulfilled") {
+    geschiedenisRes.value.forEach((d) => {
       const winkel = d.data().winkel;
       if (winkel) winkelSuggesties.add(winkel);
     });
-  })
-  .catch((err) => console.warn("Kon winkel-suggesties niet laden:", err))
-  .finally(() => {
-    for (const winkel of winkelSuggesties) {
-      const option = document.createElement("option");
-      option.value = winkel;
-      winkelDatalist.appendChild(option);
-    }
-  });
+  }
+
+  for (const winkel of winkelSuggesties) {
+    const option = document.createElement("option");
+    option.value = winkel;
+    winkelDatalist.appendChild(option);
+  }
+});
 
 // --- Sessie-winkel ---
 // De eerste winkel die je tijdens dit bezoek invult, wordt onthouden

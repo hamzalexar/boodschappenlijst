@@ -19,6 +19,15 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Zelf toegevoegde winkels en de winkel-instellingen (welke standaard-
+    // winkels verborgen zijn) — zelfde lijst-code, zelfde bescherming.
+    match /lijsten/{lijstCode}/winkels/{winkelId} {
+      allow read, write: if true;
+    }
+    match /lijsten/{lijstCode}/instellingen/{instellingId} {
+      allow read, write: if true;
+    }
+
     // Alles daarbuiten is standaard dicht (impliciete deny).
   }
 }

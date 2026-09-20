@@ -659,3 +659,19 @@ select {
   flex-shrink: 0;
   max-width: 55%;
 }
+
+.winkel-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: var(--tap-min);
+  cursor: pointer;
+}
+
+.winkel-toggle input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--color-accent);
+}
