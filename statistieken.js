@@ -13,6 +13,9 @@ import { bepaalLijstCode } from "./lijst-code.js";
 const statusIndicator = document.getElementById("status-indicator");
 const statusLabel = statusIndicator.querySelector(".status__label");
 const emptyState = document.getElementById("empty-state");
+const datumSectie = document.getElementById("datum-sectie");
+const datumLijst = document.getElementById("datum-lijst");
+const productSectie = document.getElementById("product-sectie");
 const statsList = document.getElementById("stats-list");
 const terugLink = document.getElementById("terug-link");
 
@@ -39,7 +42,7 @@ onSnapshot(
   geschiedenisQuery,
   (snapshot) => {
     const aankopen = snapshot.docs.map((d) => d.data());
-    render(aggregeer(aankopen));
+    render(aankopen);
   },
   (error) => {
     console.error("Fout bij ontvangen van de statistieken:", error);
@@ -47,7 +50,7 @@ onSnapshot(
   }
 );
 
-function aggregeer(aankopen) {
+function aggregeerPerProduct(aankopen) {
   const perProduct = new Map();
 
   for (const aankoop of aankopen) {
@@ -95,19 +98,82 @@ function aggregeer(aankopen) {
     .sort((a, b) => b.aantal - a.aantal);
 }
 
-function render(producten) {
-  statsList.innerHTML = "";
+// Groepeert per kalenderdag (op basis van de aankoopdatum) en telt
+// prijs × aantal op, voor de "Uitgaven per dag"-grafiek. Aankopen zonder
+// prijs tellen niet mee (er valt niets te berekenen).
+function aggregeerPerDatum(aankopen) {
+  const perDatum = new Map();
 
-  if (producten.length === 0) {
+  for (const aankoop of aankopen) {
+    if (typeof aankoop.prijs !== "number") continue;
+    const aantal = typeof aankoop.aantal === "number" && aankoop.aantal > 0 ? aankoop.aantal : 1;
+    const sleutel = new Date(aankoop.gekocht).toISOString().slice(0, 10);
+    const bestaand = perDatum.get(sleutel) || { tijd: aankoop.gekocht, totaal: 0 };
+    bestaand.totaal += aankoop.prijs * aantal;
+    bestaand.tijd = Math.max(bestaand.tijd, aankoop.gekocht);
+    perDatum.set(sleutel, bestaand);
+  }
+
+  return Array.from(perDatum.values()).sort((a, b) => b.tijd - a.tijd);
+}
+
+function render(aankopen) {
+  if (aankopen.length === 0) {
     emptyState.hidden = false;
+    datumSectie.hidden = true;
+    productSectie.hidden = true;
     return;
   }
   emptyState.hidden = true;
 
-  const maxAantal = producten[0].aantal;
-  for (const product of producten) {
-    statsList.appendChild(buildStatsRow(product, maxAantal));
+  const datums = aggregeerPerDatum(aankopen);
+  datumLijst.innerHTML = "";
+  datumSectie.hidden = datums.length === 0;
+  if (datums.length > 0) {
+    const maxTotaal = Math.max(...datums.map((d) => d.totaal));
+    for (const rij of datums) {
+      datumLijst.appendChild(buildDatumRow(rij, maxTotaal));
+    }
   }
+
+  const producten = aggregeerPerProduct(aankopen);
+  statsList.innerHTML = "";
+  productSectie.hidden = producten.length === 0;
+  if (producten.length > 0) {
+    const maxAantal = producten[0].aantal;
+    for (const product of producten) {
+      statsList.appendChild(buildStatsRow(product, maxAantal));
+    }
+  }
+}
+
+function buildDatumRow(rij, maxTotaal) {
+  const li = document.createElement("li");
+  li.className = "stats-row";
+
+  const top = document.createElement("div");
+  top.className = "stats-row__top";
+
+  const datumEl = document.createElement("span");
+  datumEl.className = "stats-row__naam";
+  datumEl.textContent = DATUM_FORMAT.format(new Date(rij.tijd));
+
+  const totaalEl = document.createElement("span");
+  totaalEl.className = "stats-row__aantal";
+  totaalEl.textContent = PRIJS_FORMAT.format(rij.totaal);
+
+  top.append(datumEl, totaalEl);
+
+  const bar = document.createElement("div");
+  bar.className = "stats-row__bar";
+  const barFill = document.createElement("div");
+  barFill.className = "stats-row__bar-fill";
+  const percentage = Math.max(6, Math.round((rij.totaal / maxTotaal) * 100));
+  barFill.style.width = `${percentage}%`;
+  bar.appendChild(barFill);
+
+  li.append(top, bar);
+  return li;
 }
 
 function buildStatsRow(product, maxAantal) {

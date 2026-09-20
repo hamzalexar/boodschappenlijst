@@ -35,9 +35,14 @@ en de site is gratis te hosten via GitHub Pages.
   per product hoe vaak je het hebt afgevinkt en wanneer voor het laatst.
   Producten met dezelfde naam (ongeacht hoofdletters/spaties) worden
   samengevoegd.
-- Zodra je een item afvinkt, verschijnen er twee optionele velden: **Prijs**
-  en **Winkel** — de focus springt er automatisch naartoe als zachte
-  herinnering om de prijs meteen in te vullen. De **winkel** hoef je maar
+- Elk item heeft een **aantal** (× 1, × 2, …), altijd zichtbaar en altijd
+  aan te passen — ook nadat je het hebt afgevinkt, voor als je er
+  bijvoorbeeld toch meer of minder van meeneemt dan gepland.
+- Zodra je een item afvinkt, verschijnen er twee optionele velden: **Prijs
+  per stuk** en **Winkel** — de focus springt er automatisch naartoe als
+  zachte herinnering om de prijs meteen in te vullen. De prijs is altijd
+  de prijs van één stuk; vermenigvuldigd met het aantal vind je het totaal
+  van dat item terug. De **winkel** hoef je maar
   één keer per bezoek te typen: de eerste winkel die je invult, wordt die
   sessie onthouden en automatisch toegepast op alle andere items die je
   daarna afvinkt (ook met terugwerkende kracht op al-afgevinkte items).
@@ -50,9 +55,14 @@ en de site is gratis te hosten via GitHub Pages.
 - Vul je een prijs én winkel in, en blijkt uit jullie eigen geschiedenis dat
   je hetzelfde product ooit €0,30 of meer goedkoper hebt gekocht bij een
   andere winkel, dan verschijnt er kort een melding onderin het scherm.
-- Op de statistiekenpagina zie je per product een vergelijking tussen
-  winkels, met de goedkoopste bovenaan (🏆) — zo bouw je op termijn op wat
-  waar het voordeligst is.
+- Boven de teller verschijnt een **Totaal** zodra je afgevinkte items met
+  een prijs hebt: de som van prijs × aantal van alles wat je tot nu toe in
+  je kar hebt. Handig om tijdens het shoppen in de gaten te houden, en
+  gaat vanzelf terug naar niets zodra je "Wis afgevinkte items" gebruikt.
+- Op de statistiekenpagina zie je, naast een vergelijking tussen winkels
+  per product (goedkoopste bovenaan, 🏆), ook een grafiek **"Uitgaven per
+  dag"**: het totaalbedrag van elke boodschappentrip waarin je prijzen hebt
+  ingevuld, gesorteerd op datum.
 
 ### ⚠️ De link is privé — behandel hem als een wachtwoord
 
