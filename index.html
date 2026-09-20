@@ -66,7 +66,8 @@
         <div class="add-form__row">
           <div class="field field--grow">
             <label for="item-categorie" class="visually-hidden">Categorie</label>
-            <select id="item-categorie" name="categorie">
+            <select id="item-categorie" name="categorie" required>
+              <option value="" disabled selected>Kies een categorie…</option>
               <option value="Groenten & fruit">Groenten &amp; fruit</option>
               <option value="Zuivel">Zuivel</option>
               <option value="Vlees & vis">Vlees &amp; vis</option>
@@ -74,7 +75,7 @@
               <option value="Droge voeding">Droge voeding</option>
               <option value="Dranken">Dranken</option>
               <option value="Huishouden">Huishouden</option>
-              <option value="Overig" selected>Overig</option>
+              <option value="Overig">Overig</option>
             </select>
           </div>
           <button type="submit" class="btn btn--primary">

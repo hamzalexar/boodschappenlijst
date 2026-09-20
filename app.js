@@ -18,6 +18,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { bepaalLijstCode } from "./lijst-code.js";
+import { herkenCategorie } from "./product-categorieen.js";
 
 const CATEGORIE_VOLGORDE = [
   "Groenten & fruit",
@@ -46,6 +47,25 @@ const categoryTemplate = document.getElementById("category-group-template");
 const itemTemplate = document.getElementById("item-template");
 const statsLink = document.getElementById("stats-link");
 const winkelDatalist = document.getElementById("winkel-suggesties");
+
+// --- Automatische categorie-herkenning bij het toevoegen ---
+// Zolang de gebruiker de categorie niet zelf heeft aangepast, mag het
+// typen van een herkende productnaam de keuze automatisch invullen. Zodra
+// iemand zelf een categorie kiest, laten we die staan (ook als daarna nog
+// verder wordt getypt in het naam-veld).
+let categorieWerdHandmatigGewijzigd = false;
+
+categorieSelect.addEventListener("change", () => {
+  categorieWerdHandmatigGewijzigd = true;
+});
+
+naamInput.addEventListener("input", () => {
+  if (categorieWerdHandmatigGewijzigd) return;
+  const categorie = herkenCategorie(naamInput.value);
+  if (categorie) {
+    categorieSelect.value = categorie;
+  }
+});
 
 const lijstCode = bepaalLijstCode();
 if (statsLink) {
@@ -265,6 +285,8 @@ addForm.addEventListener("submit", async (event) => {
     });
     naamInput.value = "";
     hoeveelheidInput.value = "";
+    categorieSelect.value = "";
+    categorieWerdHandmatigGewijzigd = false;
     naamInput.focus();
   } catch (err) {
     console.error("Kon item niet toevoegen:", err);

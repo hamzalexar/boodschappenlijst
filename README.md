@@ -10,6 +10,13 @@ en de site is gratis te hosten via GitHub Pages.
 
 ## Gebruik
 
+- Terwijl je een productnaam typt, herkent de app veelvoorkomende
+  boodschappen (bijv. "melk" → Zuivel) en vult de categorie automatisch in.
+  Herkent de app het product niet, dan moet je zelf een categorie kiezen
+  voordat je kunt toevoegen — de app raadt nooit zomaar. Kies je zelf een
+  andere categorie, dan blijft die staan, ook als je de naam nog aanpast.
+  De woordenlijst staat in [`product-categorieen.js`](product-categorieen.js)
+  en is makkelijk uit te breiden.
 - Open de site. Bij het allereerste bezoek maakt de app automatisch een
   nieuwe, lege lijst aan met een lange, willekeurige code in de link
   (bijv. `?lijst=Ab3xQ...`).
