@@ -23,7 +23,13 @@
           <span class="status__label">Verbinden…</span>
         </span>
       </div>
-      <p class="stats-intro">Hoe vaak je gezin elk product de afgelopen tijd heeft afgevinkt.</p>
+
+      <div id="stats-tabs" class="stats-tabs" role="tablist" aria-label="Weergave" hidden>
+        <button type="button" role="tab" id="tab-maand" class="stats-tab" data-tab="maand"
+                aria-selected="true" aria-controls="paneel-maand">📅 Per maand</button>
+        <button type="button" role="tab" id="tab-product" class="stats-tab" data-tab="product"
+                aria-selected="false" aria-controls="paneel-product">🛒 Per product</button>
+      </div>
     </header>
 
     <main>
@@ -33,21 +39,37 @@
         <p class="empty-state__hint">Vink een paar boodschappen af — dan verschijnen hier statistieken.</p>
       </div>
 
-      <section id="maand-sectie" hidden>
-        <div class="stats-section-header">
-          <h2 class="category-group__title">Uitgaven per maand</h2>
-          <label for="maand-categorie-filter" class="visually-hidden">Filter op categorie</label>
-          <select id="maand-categorie-filter" class="maand-filter"></select>
-        </div>
+      <section id="paneel-maand" class="stats-panel" role="tabpanel" aria-labelledby="tab-maand" hidden>
+        <label for="maand-categorie-filter" class="visually-hidden">Filter op categorie</label>
+        <select id="maand-categorie-filter" class="stats-select"></select>
         <ul id="maand-lijst" class="stats-list"></ul>
         <p id="maand-leeg" class="empty-state__hint" hidden>
           Geen uitgaven met deze categorie.
         </p>
       </section>
 
-      <section id="product-sectie" hidden>
-        <h2 class="category-group__title">Per product</h2>
+      <section id="paneel-product" class="stats-panel" role="tabpanel" aria-labelledby="tab-product" hidden>
+        <div class="stats-controls">
+          <label for="product-zoek" class="visually-hidden">Zoek een product</label>
+          <input id="product-zoek" type="search" class="stats-input"
+                 placeholder="🔍 Zoek een product…" autocomplete="off" />
+          <div class="stats-controls__row">
+            <label for="product-categorie-filter" class="visually-hidden">Filter op categorie</label>
+            <select id="product-categorie-filter" class="stats-select"></select>
+            <label for="product-sorteer" class="visually-hidden">Sorteer op</label>
+            <select id="product-sorteer" class="stats-select">
+              <option value="aantal">Vaakst gekocht</option>
+              <option value="uitgegeven">Meest uitgegeven</option>
+              <option value="laatst">Laatst gekocht</option>
+              <option value="naam">A–Z</option>
+            </select>
+          </div>
+        </div>
+
+        <p id="product-teller" class="stats-teller" aria-live="polite"></p>
         <ul id="stats-list" class="stats-list"></ul>
+        <p id="product-leeg" class="empty-state__hint" hidden>Geen producten gevonden.</p>
+        <button type="button" id="product-meer" class="btn btn--secondary stats-meer" hidden></button>
       </section>
     </main>
 

@@ -62,11 +62,17 @@ en de site is gratis te hosten via GitHub Pages.
   een prijs hebt: de som van prijs × aantal van alles wat je tot nu toe in
   je kar hebt. Handig om tijdens het shoppen in de gaten te houden, en
   gaat vanzelf terug naar niets zodra je "Wis afgevinkte items" gebruikt.
-- Op de statistiekenpagina zie je, naast een vergelijking tussen winkels
-  per product (goedkoopste bovenaan, 🏆), ook een grafiek **"Uitgaven per
-  maand"**: het totaalbedrag per kalendermaand waarin je prijzen hebt
-  ingevuld. Met de dropdown erboven filter je op één categorie (bijv. alleen
-  "Dranken"), om te zien wat je daaraan per maand uitgeeft.
+- De statistiekenpagina heeft twee tabbladen die bovenaan blijven staan,
+  zodat je op een telefoon niet hoeft te scrollen om te wisselen:
+  - **📅 Per maand**: het totaalbedrag per kalendermaand waarin je prijzen
+    hebt ingevuld. Met de dropdown filter je op één categorie (bijv. alleen
+    "Dranken"), om te zien wat je daaraan per maand uitgeeft.
+  - **🛒 Per product**: compacte regels met naam, categorie, hoe vaak je het
+    kocht en wat je er in totaal aan uitgaf. Standaard zie je de eerste 15
+    ("Toon alle" laat de rest zien). Zoek op naam, filter op categorie of
+    sorteer op vaakst gekocht, meest uitgegeven, laatst gekocht of A–Z. Tik
+    een product open voor de laatste aankoopdatum en de vergelijking tussen
+    winkels (goedkoopste bovenaan, 🏆).
 - Staat een product verkeerd gecategoriseerd (bijv. onder "Overig" terwijl
   het eigenlijk Zuivel is)? Ga naar **"🏷️ Categorieën corrigeren"** onderaan
   de statistiekenpagina. Die aparte Producten-pagina toont elk product dat
