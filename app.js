@@ -21,6 +21,7 @@ import { firebaseConfig } from "./firebase-config.js";
 import { bepaalLijstCode } from "./lijst-code.js";
 import { herkenCategorie } from "./product-categorieen.js";
 import { CATEGORIE_VOLGORDE } from "./categorieen.js";
+import { prijsverloopPerWinkel } from "./prijzen.js";
 import { winkelsRef, instellingenRef, combineerWinkels } from "./winkel-instellingen.js";
 
 // --- DOM-elementen ---
@@ -67,23 +68,22 @@ prijsMeldingSluiten.addEventListener("click", () => {
 async function controleerPrijsVergelijking(item, prijs, winkel) {
   if (typeof prijs !== "number" || !winkel) return;
   try {
-    const snapshot = await getDocs(query(geschiedenisRef, limit(500)));
+    const snapshot = await getDocs(query(geschiedenisRef, orderBy("gekocht", "desc"), limit(500)));
     const sleutel = item.naam.trim().toLowerCase();
-    let goedkoopsteAndereWinkel = null;
+    const aankopenVanProduct = snapshot.docs
+      .map((d) => d.data())
+      .filter((a) => a.naam && a.naam.trim().toLowerCase() === sleutel);
 
-    snapshot.forEach((d) => {
-      const data = d.data();
-      if (
-        data.naam &&
-        data.naam.trim().toLowerCase() === sleutel &&
-        data.winkel &&
-        data.winkel !== winkel &&
-        typeof data.prijs === "number" &&
-        (!goedkoopsteAndereWinkel || data.prijs < goedkoopsteAndereWinkel.prijs)
-      ) {
-        goedkoopsteAndereWinkel = { winkel: data.winkel, prijs: data.prijs };
+    // Vergelijk met de laatst betaalde prijs per andere winkel, zodat een
+    // oude (misschien inmiddels gestegen) prijs niet blijft meetellen.
+    let goedkoopsteAndereWinkel = null;
+    for (const [andereWinkel, punten] of prijsverloopPerWinkel(aankopenVanProduct)) {
+      if (andereWinkel === winkel) continue;
+      const laatstePrijs = punten[punten.length - 1].prijs;
+      if (!goedkoopsteAndereWinkel || laatstePrijs < goedkoopsteAndereWinkel.prijs) {
+        goedkoopsteAndereWinkel = { winkel: andereWinkel, prijs: laatstePrijs };
       }
-    });
+    }
 
     if (
       goedkoopsteAndereWinkel &&
@@ -91,7 +91,7 @@ async function controleerPrijsVergelijking(item, prijs, winkel) {
     ) {
       const verschil = PRIJS_FORMAT.format(prijs - goedkoopsteAndereWinkel.prijs);
       toonPrijsMelding(
-        `💡 ${item.naam} was bij ${goedkoopsteAndereWinkel.winkel} ${verschil} goedkoper: ${PRIJS_FORMAT.format(goedkoopsteAndereWinkel.prijs)} in plaats van ${PRIJS_FORMAT.format(prijs)} bij ${winkel}.`
+        `💡 ${item.naam} kostte laatst bij ${goedkoopsteAndereWinkel.winkel} ${verschil} minder: ${PRIJS_FORMAT.format(goedkoopsteAndereWinkel.prijs)} in plaats van ${PRIJS_FORMAT.format(prijs)} bij ${winkel}.`
       );
     }
   } catch (err) {

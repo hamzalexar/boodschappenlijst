@@ -10,6 +10,7 @@ import {
 import { firebaseConfig } from "./firebase-config.js";
 import { bepaalLijstCode } from "./lijst-code.js";
 import { CATEGORIE_VOLGORDE } from "./categorieen.js";
+import { prijsverloopPerWinkel } from "./prijzen.js";
 
 const statusIndicator = document.getElementById("status-indicator");
 const statusLabel = statusIndicator.querySelector(".status__label");
@@ -143,7 +144,7 @@ function aggregeerPerProduct(aankopen) {
         aantal: 0,
         uitgegeven: 0,
         laatsteGekocht: aankoop.gekocht,
-        winkels: new Map(),
+        aankopen: [],
       };
       perProduct.set(sleutel, product);
     }
@@ -158,27 +159,32 @@ function aggregeerPerProduct(aankopen) {
       product.uitgegeven += aankoop.prijs * aantalStuks(aankoop);
     }
 
-    if (aankoop.winkel && typeof aankoop.prijs === "number") {
-      const bestaandeWinkel = product.winkels.get(aankoop.winkel) || {
-        totaalPrijs: 0,
-        aantalMetPrijs: 0,
-      };
-      bestaandeWinkel.totaalPrijs += aankoop.prijs;
-      bestaandeWinkel.aantalMetPrijs += 1;
-      product.winkels.set(aankoop.winkel, bestaandeWinkel);
-    }
+    product.aankopen.push(aankoop);
   }
 
   return Array.from(perProduct.values()).map((product) => ({
     ...product,
-    winkels: Array.from(product.winkels.entries())
-      .map(([winkel, data]) => ({
-        winkel,
-        gemiddeldePrijs: data.totaalPrijs / data.aantalMetPrijs,
-        aantalMetPrijs: data.aantalMetPrijs,
-      }))
-      .sort((a, b) => a.gemiddeldePrijs - b.gemiddeldePrijs),
+    winkels: bouwWinkelOverzicht(product.aankopen),
   }));
+}
+
+// Per winkel: laatst betaalde prijs, de vorige prijs (voor de trend) en het
+// gemiddelde. Gesorteerd op de laatste prijs, zodat een recente prijsstijging
+// meteen meetelt en niet wordt uitgemiddeld met oude aankopen.
+function bouwWinkelOverzicht(aankopen) {
+  return Array.from(prijsverloopPerWinkel(aankopen).entries())
+    .map(([winkel, punten]) => {
+      const laatste = punten[punten.length - 1];
+      const vorige = punten.length > 1 ? punten[punten.length - 2] : null;
+      return {
+        winkel,
+        laatstePrijs: laatste.prijs,
+        vorigePrijs: vorige ? vorige.prijs : null,
+        gemiddeldePrijs: punten.reduce((som, p) => som + p.prijs, 0) / punten.length,
+        aantalKeer: punten.length,
+      };
+    })
+    .sort((a, b) => a.laatstePrijs - b.laatstePrijs);
 }
 
 // Groepeert per kalendermaand (op basis van de aankoopdatum) en telt
@@ -347,6 +353,8 @@ function buildWinkelVergelijking(winkels) {
   wrapper.className = "stats-row__winkels";
 
   winkels.forEach((winkel, index) => {
+    const blok = document.createElement("div");
+
     const rij = document.createElement("div");
     rij.className = "stats-row__winkel";
     if (index === 0) rij.classList.add("stats-row__winkel--goedkoopst");
@@ -357,11 +365,35 @@ function buildWinkelVergelijking(winkels) {
 
     const prijs = document.createElement("span");
     prijs.className = "stats-row__winkel-prijs";
-    const suffix = winkel.aantalMetPrijs > 1 ? " gem." : "";
-    prijs.textContent = `${PRIJS_FORMAT.format(winkel.gemiddeldePrijs)}${suffix}`;
+    prijs.textContent = PRIJS_FORMAT.format(winkel.laatstePrijs);
+
+    // Trend t.o.v. de vorige keer dat je het bij deze winkel kocht.
+    if (winkel.vorigePrijs !== null) {
+      const verschil = winkel.laatstePrijs - winkel.vorigePrijs;
+      if (Math.abs(verschil) >= 0.005) {
+        const duurder = verschil > 0;
+        const trend = document.createElement("span");
+        trend.className = `stats-row__trend ${duurder ? "is-duurder" : "is-goedkoper"}`;
+        trend.append(`${duurder ? "▲" : "▼"} ${PRIJS_FORMAT.format(Math.abs(verschil))}`);
+        const uitleg = document.createElement("span");
+        uitleg.className = "visually-hidden";
+        uitleg.textContent = duurder ? " duurder dan vorige keer" : " goedkoper dan vorige keer";
+        trend.appendChild(uitleg);
+        prijs.append(" ", trend);
+      }
+    }
 
     rij.append(naam, prijs);
-    wrapper.appendChild(rij);
+    blok.appendChild(rij);
+
+    if (winkel.aantalKeer > 1) {
+      const meta = document.createElement("div");
+      meta.className = "stats-row__winkel-meta";
+      meta.textContent = `laatst betaald · gem. ${PRIJS_FORMAT.format(winkel.gemiddeldePrijs)} over ${winkel.aantalKeer} keer`;
+      blok.appendChild(meta);
+    }
+
+    wrapper.appendChild(blok);
   });
 
   return wrapper;

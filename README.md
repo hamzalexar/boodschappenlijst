@@ -57,8 +57,10 @@ en de site is gratis te hosten via GitHub Pages.
   ongewenste standaardwinkels kunt uitvinken zodat ze niet meer als
   suggestie verschijnen. De vaste Belgische lijst blijft de basis.
 - Vul je een prijs én winkel in, en blijkt uit jullie eigen geschiedenis dat
-  je hetzelfde product ooit €0,30 of meer goedkoper hebt gekocht bij een
-  andere winkel, dan verschijnt er kort een melding onderin het scherm.
+  hetzelfde product bij een andere winkel **laatst** €0,30 of meer goedkoper
+  was, dan verschijnt er kort een melding onderin het scherm. Daarbij telt
+  steeds de laatst betaalde prijs per winkel, zodat een winkel die duurder
+  is geworden niet blijft meetellen met zijn oude, lagere prijs.
 - Boven de teller verschijnt een **Totaal** zodra je afgevinkte items met
   een prijs hebt: de som van prijs × aantal van alles wat je tot nu toe in
   je kar hebt. Handig om tijdens het shoppen in de gaten te houden, en
@@ -73,7 +75,12 @@ en de site is gratis te hosten via GitHub Pages.
     ("Toon alle" laat de rest zien). Zoek op naam, filter op categorie of
     sorteer op vaakst gekocht, meest uitgegeven, laatst gekocht of A–Z. Tik
     een product open voor de laatste aankoopdatum en de vergelijking tussen
-    winkels (goedkoopste bovenaan, 🏆).
+    winkels. Die toont per winkel de **laatst betaalde prijs** (goedkoopste
+    bovenaan, 🏆), met een pijl als de prijs sinds de vorige keer is gestegen
+    (▲ rood) of gedaald (▼ groen), plus het gemiddelde over alle keren. Zo zie
+    je een prijsstijging meteen. Regels van dezelfde bon tellen samen als één
+    prijs, en een eenmalige actie vertekent het gemiddelde niet. Let wel: de
+    prijzen zijn netto na korting, dus een aanbieding telt als laatste prijs.
 - Staat een product verkeerd gecategoriseerd (bijv. onder "Overig" terwijl
   het eigenlijk Zuivel is)? Ga naar **"🏷️ Categorieën corrigeren"** onderaan
   de statistiekenpagina. Die aparte Producten-pagina toont elk product dat
@@ -167,6 +174,7 @@ live.
 | `producten.js`           | Logica voor het corrigeren van categorieën         |
 | `winkels.js`             | Logica voor het beheren van winkels                |
 | `lijst-code.js`          | Gedeeld: bepaalt de lijst-code uit URL/localStorage |
+| `prijzen.js`             | Gedeeld: prijsverloop van een product per winkel    |
 | `categorieen.js`         | Gedeeld: de vaste lijst met categorieën             |
 | `winkel-instellingen.js` | Gedeeld: combineert standaard- en eigen winkels     |
 | `firebase-config.js`     | Jouw Firebase-projectgegevens                      |

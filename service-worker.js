@@ -1,6 +1,6 @@
 // Verhoog dit versienummer bij elke wijziging aan de gecachete bestanden,
 // zodat gebruikers de nieuwe versie krijgen in plaats van een oude uit de cache.
-const CACHE_NAME = "boodschappenlijst-v11";
+const CACHE_NAME = "boodschappenlijst-v12";
 
 const APP_SHELL = [
   "./",
@@ -14,6 +14,7 @@ const APP_SHELL = [
   "./producten.js",
   "./winkels.js",
   "./lijst-code.js",
+  "./prijzen.js",
   "./categorieen.js",
   "./product-categorieen.js",
   "./winkels-belgie.js",

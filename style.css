@@ -538,7 +538,28 @@ select {
   border-top: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+}
+
+.stats-row__winkel-meta {
+  margin-top: 1px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.stats-row__trend {
+  margin-left: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.stats-row__trend.is-duurder {
+  color: var(--color-danger);
+}
+
+.stats-row__trend.is-goedkoper {
+  color: var(--color-online);
 }
 
 .stats-row__winkel {
