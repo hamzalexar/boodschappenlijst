@@ -32,7 +32,6 @@ const listContainer = document.getElementById("list-container");
 const emptyState = document.getElementById("empty-state");
 const counterEl = document.getElementById("counter");
 const totaalEl = document.getElementById("totaal");
-const shareButton = document.getElementById("share-button");
 const clearCheckedButton = document.getElementById("clear-checked-button");
 const statusIndicator = document.getElementById("status-indicator");
 const statusLabel = statusIndicator.querySelector(".status__label");
@@ -503,58 +502,6 @@ clearCheckedButton.addEventListener("click", async () => {
   } catch (err) {
     console.error("Kon afgevinkte items niet wissen:", err);
   }
-});
-
-// --- Delen ---
-function buildShareUrl() {
-  const url = new URL(window.location.href);
-  url.searchParams.set("lijst", lijstCode);
-  return url.toString();
-}
-
-function kopieerViaFallback(tekst) {
-  const textarea = document.createElement("textarea");
-  textarea.value = tekst;
-  textarea.style.position = "fixed";
-  textarea.style.opacity = "0";
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textarea);
-}
-
-function toonTijdelijkeTekst(button, tekst, duurMs = 1600) {
-  const origineel = button.innerHTML;
-  button.textContent = tekst;
-  button.disabled = true;
-  setTimeout(() => {
-    button.innerHTML = origineel;
-    button.disabled = false;
-  }, duurMs);
-}
-
-shareButton.addEventListener("click", async () => {
-  const url = buildShareUrl();
-
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: "Boodschappenlijst",
-        text: "Doe mee met onze gedeelde boodschappenlijst",
-        url,
-      });
-    } catch (err) {
-      if (err.name !== "AbortError") console.error("Delen mislukt:", err);
-    }
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(url);
-  } catch {
-    kopieerViaFallback(url);
-  }
-  toonTijdelijkeTekst(shareButton, "Link gekopieerd!");
 });
 
 // --- Online/offline status ---

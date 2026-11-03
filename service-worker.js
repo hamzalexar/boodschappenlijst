@@ -1,6 +1,6 @@
 // Verhoog dit versienummer bij elke wijziging aan de gecachete bestanden,
 // zodat gebruikers de nieuwe versie krijgen in plaats van een oude uit de cache.
-const CACHE_NAME = "boodschappenlijst-v10";
+const CACHE_NAME = "boodschappenlijst-v11";
 
 const APP_SHELL = [
   "./",

@@ -20,8 +20,9 @@ en de site is gratis te hosten via GitHub Pages.
 - Open de site. Bij het allereerste bezoek maakt de app automatisch een
   nieuwe, lege lijst aan met een lange, willekeurige code in de link
   (bijv. `?lijst=Ab3xQ...`).
-- Klik op **"Deel deze lijst"** om die link te kopiëren (of, op een telefoon,
-  te delen via het systeem-deelmenu). Stuur die link naar je gezinsleden.
+- Om iemand anders op dezelfde lijst te krijgen, stuur je de volledige link
+  uit de adresbalk van je browser (met `?lijst=...` erin) naar je
+  gezinsleden. Er is geen aparte deel-knop meer.
 - Iedereen die de link opent, ziet en bewerkt dezelfde lijst. Toevoegen,
   afvinken en verwijderen verschijnt direct bij iedereen — niemand hoeft te
   verversen.
@@ -31,8 +32,8 @@ en de site is gratis te hosten via GitHub Pages.
 - De app werkt ook offline (bijv. slechte ontvangst in de winkel): items die
   je toevoegt of afvinkt worden bewaard en gesynchroniseerd zodra er weer
   verbinding is. De statusindicator rechtsboven toont Online/Offline.
-- Onderaan de pagina staat een link **"Bekijk koopstatistieken"**: die toont
-  per product hoe vaak je het hebt afgevinkt en wanneer voor het laatst.
+- Bovenaan de pagina staat de knop **"📊 Statistieken"**: die toont per
+  product hoe vaak je het hebt afgevinkt en wanneer voor het laatst.
   Producten met dezelfde naam (ongeacht hoofdletters/spaties) worden
   samengevoegd.
 - Elk item heeft een **aantal** (× 1, × 2, …), altijd zichtbaar en altijd
